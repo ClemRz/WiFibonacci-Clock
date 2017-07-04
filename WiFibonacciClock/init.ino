@@ -30,7 +30,8 @@ void initDS3231(void) {
   _clock.setDateTime(__DATE__, __TIME__);
 #if DEBUG
   Serial.println(F("DS3231 init"));
-  printDateTime();
+  RTCDateTime dt = _clock.getDateTime();
+  Serial.println(_clock.dateFormat("Y-m-d H:i:s", dt));
 #endif
 }
 
@@ -48,7 +49,7 @@ void initRandom(void) {
 }
 
 void initButtons(void) {
-  pinMode(TOGGLE_BUTTON, INPUT_PULLUP);
+  pinMode(BRIGHTNESS_BUTTON, INPUT_PULLUP);
   pinMode(MODE_BUTTON, INPUT_PULLUP);
   pinMode(PALETTE_BUTTON, INPUT_PULLUP);
 }

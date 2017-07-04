@@ -20,26 +20,121 @@
  */
 
 void handleModes(void) {
-  if (_ledStripOn) {
-    switch (_mode) {
-      case 0:
-        displayCurrentTime();
-        break;
-      case 1:
-        rainbowCycle(RAINBOW_DELAY_MS);
-        break;
-      case 2:
-        rainbow(RAINBOW_DELAY_MS);
-        break;
-    }
+  //if (_ledStripOn) {
+    //if (_ledStrip.getBrightness() < 255) {
+    //  fadeStripOn(RAINBOW_DELAY_MS);
+    //} else {
+      switch (_mode) {
+        case 0:
+          displayCurrentTime();
+          break;
+        case 1:
+          rainbowCycle(RAINBOW_DELAY_MS);
+          break;
+        case 2:
+          rainbow(RAINBOW_DELAY_MS);
+          break;
+        case 3:
+          flashlight();
+          break;
+      }
+    //}
+  //} else {
+    //turnStripOff();
+    //fadeStripOff(RAINBOW_DELAY_MS);
+  //}
+}
+
+void displayCurrentTime() {
+  RTCDateTime dt = _clock.getDateTime();
+  setTime(dt.hour % 12, dt.minute);
+}
+
+void rainbowCycle(uint8_t delayMs) {
+  for (uint8_t i = 0; i < CLOCK_PIXELS; i++) setPixel(i, wheel(((i * 256 / CLOCK_PIXELS) + _j) & 255));
+  _ledStrip.show();
+  _j = (_j + 1) % (256 * 5);
+  delay(delayMs);
+}
+
+void rainbow(uint8_t delayMs) {
+  for(uint8_t i = 0; i < CLOCK_PIXELS; i++) setPixel(i, wheel((i + _j) & 255));
+  _ledStrip.show();
+  _j = (_j + 1) % 256;
+  delay(delayMs);
+}
+
+void flashlight(void) {
+  for (int i=0; i<CLOCK_PIXELS; i++) setPixel(i, _white);
+  _ledStrip.show();
+}
+
+void turnStripOff(void) {
+  saveLedStrip();
+  for (int i=0; i<CLOCK_PIXELS; i++) setPixel(i, _black);
+  _ledStrip.show();
+}
+
+void fadeStripOff(uint8_t delayMs) {
+  _brightness = _brightness > FADING_STEP ? _brightness - FADING_STEP : 0;
+  if (gammaCorrected(_brightness) == 0) saveLedStrip();
+  _ledStrip.setBrightness(gammaCorrected(_brightness));
+  _ledStrip.show();
+  delay(delayMs);
+}
+
+void fadeStripOn(uint8_t delayMs) {
+  if (gammaCorrected(_brightness) == 0) restoreLedStrip();
+  _brightness = _brightness < 255 - FADING_STEP ? _brightness + FADING_STEP : 255;
+  _ledStrip.setBrightness(gammaCorrected(_brightness));
+  _ledStrip.show();
+  delay(delayMs);
+}
+
+void saveLedStrip(void) {
+  if (_ledStrip.getBrightness() > 0) for (uint8_t i = 0; i < LEDS_SIZE; i++) _leds[i] = _ledStrip.getPixelColor(i);
+}
+
+void restoreLedStrip(void) {
+  if (_ledStrip.getBrightness() == 0) _ledStrip.setBrightness(1);
+  for (uint8_t i = 0; i < LEDS_SIZE; i++) _ledStrip.setPixelColor(i, _leds[i]);
+}
+
+uint8_t gammaCorrected(uint8_t p) {
+  return pgm_read_byte(&GAMMA_8[p]);
+}
+
+uint32_t wheel(byte wheelPos) {
+  if (wheelPos < 85) {
+    return _ledStrip.Color(wheelPos * 3, 255 - wheelPos * 3, 0);
+  } else if(wheelPos < 170) {
+    wheelPos -= 85;
+    return _ledStrip.Color(255 - wheelPos * 3, 0, wheelPos * 3);
   } else {
-    for (int i=0; i<CLOCK_PIXELS; i++) setPixel(i, _black);
-    _ledStrip.show();
+    wheelPos -= 170;
+    return _ledStrip.Color(0, wheelPos * 3, 255 - wheelPos * 3);
   }
 }
 
-void toggleLedStrip(void) {
-  _ledStripOn = !_ledStripOn;
+void setTime(byte hours, byte minutes) {
+  if (_hours != hours || _minutes/5 != minutes/5 || _refreshLedStrip) {
+#if DEBUG
+    Serial.print(hours); Serial.print(F(":")); Serial.println(minutes);
+#endif
+    _refreshLedStrip = false;
+    _hours = hours;
+    _minutes = minutes;
+    
+    for (int i=0; i<CLOCK_PIXELS; i++) _bits[i] = 0;
+    
+    setBits(hours, 0x01);
+    setBits(minutes/5, 0x02);
+    
+    for (int i=0; i<CLOCK_PIXELS; i++) {
+      setPixel(i, _colors[_palette][_bits[i]]);
+    }
+    _ledStrip.show();
+  }
 }
 
 void setPixel(byte pixel, uint32_t color) {
@@ -64,69 +159,6 @@ void setPixel(byte pixel, uint32_t color) {
       _ledStrip.setPixelColor(8, color);
       _ledStrip.setPixelColor(9, color);
       break;
-  }
-}
-
-void displayCurrentTime() {
-  RTCDateTime dt = _clock.getDateTime();
-  setTime(dt.hour % 12, dt.minute);
-}
-
-void setTime(byte hours, byte minutes) {
-  if (_hours != hours || _minutes != minutes || _refreshLedStrip) {
-    _refreshLedStrip = false;
-    _hours = hours;
-    _minutes = minutes;
-    
-    for (int i=0; i<CLOCK_PIXELS; i++) _bits[i] = 0;
-    
-    setBits(hours, 0x01);
-    setBits(minutes/5, 0x02);
-    
-    for (int i=0; i<CLOCK_PIXELS; i++) {
-      setPixel(i, _colors[_palette][_bits[i]]);
-    }
-    _ledStrip.show();
-  }
-}
-
-void rainbowCycle(uint8_t delayMs) {
-  for (uint8_t i = 0; i < CLOCK_PIXELS; i++) setPixel(i, wheel(((i * 256 / CLOCK_PIXELS) + _j) & 255));
-  _ledStrip.show();
-  _j = (_j + 1) % (256 * 5);
-  delay(delayMs);
-
-  /*uint16_t i, j;
-  for (j = 0; j < 256 * 5; j++) {
-    for (i = 0; i < CLOCK_PIXELS; i++) setPixel(i, wheel(((i * 256 / CLOCK_PIXELS) + j) & 255));
-    _ledStrip.show();
-    delay(delayMs);
-  }*/
-}
-
-void rainbow(uint8_t delayMs) {
-  for(uint8_t i = 0; i < CLOCK_PIXELS; i++) setPixel(i, wheel((i + j) & 255));
-  _ledStrip.show();
-  _j = (_j + 1) % 256;
-  delay(delayMs);
-  
-  /*uint16_t i, j;
-  for (j = 0; j < 256; j++) {
-    for(i = 0; i < CLOCK_PIXELS; i++) setPixel(i, wheel((i + j) & 255));
-    _ledStrip.show();
-    delay(delayMs);
-  }*/
-}
-
-uint32_t wheel(byte wheelPos) {
-  if (wheelPos < 85) {
-    return _ledStrip.Color(wheelPos * 3, 255 - wheelPos * 3, 0);
-  } else if(wheelPos < 170) {
-    wheelPos -= 85;
-    return _ledStrip.Color(255 - wheelPos * 3, 0, wheelPos * 3);
-  } else {
-    wheelPos -= 170;
-    return _ledStrip.Color(0, wheelPos * 3, 255 - wheelPos * 3);
   }
 }
 
