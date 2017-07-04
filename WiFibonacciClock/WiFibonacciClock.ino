@@ -81,7 +81,6 @@ const uint8_t PROGMEM GAMMA_8[] = {
 
 // Global variables
 unsigned long _lastDebounceTime = 0;
-uint32_t _leds[LEDS_SIZE];
 uint8_t _brightness = 255;
 int
   _palette = 0,
