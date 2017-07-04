@@ -56,17 +56,3 @@ void initButtons(void) {
   pinMode(PALETTE_BUTTON, INPUT_PULLUP);
 }
 
-void initAP(void) {
-  WiFi.disconnect();
-  WiFi.softAP(AP_SSID, AP_PASSWORD);
-  IPAddress myIP = WiFi.softAPIP();
-#if DEBUG
-  Serial.print("AP IP address: "); Serial.println(myIP);
-#endif
-}
-
-void initWebSocket(void) {
-  webSocket.begin();
-  webSocket.onEvent(webSocketEvent);
-}
-

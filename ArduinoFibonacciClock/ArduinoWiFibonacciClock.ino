@@ -22,12 +22,6 @@
 #include <Wire.h>
 #include <DS3231.h>
 #include <Adafruit_NeoPixel.h>
-#include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <WebSocketsServer.h>
-#include <Hash.h>
-#include "overrides.h"
 
 // General
 #define MICROSEC              1000000L
@@ -44,8 +38,6 @@
 */
 #define DEBUG                 1
 #define FADING_STEP           3
-#define AP_SSID               "WiFibonacciClk"
-#define AP_PASSWORD           "123niab"
 // ======================================
 
 // Pins
@@ -105,7 +97,6 @@ byte
   _minutes = 0;
 DS3231 _clock;
 Adafruit_NeoPixel _ledStrip = Adafruit_NeoPixel(LEDS_SIZE, LED_DATA, NEO_RGB + NEO_KHZ800);
-MyWebSocketsServer webSocket = MyWebSocketsServer(81);
 
 // Global constants
 const uint32_t
@@ -172,12 +163,10 @@ void setup(void) {
   initDS3231();
   initLedStrip();
   initRandom();
-  initAP();
 }
 
 void loop(void) {
   handleButtons();
   handleModes();
-  webSocket.loop();
 }
 
