@@ -69,35 +69,20 @@ void flashlight(void) {
   _ledStrip.show();
 }
 
-void turnStripOff(void) {
-  saveLedStrip();
-  for (int i=0; i<CLOCK_PIXELS; i++) setPixel(i, _black);
-  _ledStrip.show();
-}
-
 void fadeStripOff(uint8_t delayMs) {
   _brightness = _brightness > FADING_STEP ? _brightness - FADING_STEP : 0;
-  if (gammaCorrected(_brightness) == 0) saveLedStrip();
-  _ledStrip.setBrightness(gammaCorrected(_brightness));
+  uint8_t b = gammaCorrected(_brightness);
+  _ledStrip.setBrightness(b == 0 ? 1 : b);
   _ledStrip.show();
   delay(delayMs);
 }
 
 void fadeStripOn(uint8_t delayMs) {
-  if (gammaCorrected(_brightness) == 0) restoreLedStrip();
   _brightness = _brightness < 255 - FADING_STEP ? _brightness + FADING_STEP : 255;
-  _ledStrip.setBrightness(gammaCorrected(_brightness));
+  uint8_t b = gammaCorrected(_brightness);
+  _ledStrip.setBrightness(b == 0 ? 1 : b);
   _ledStrip.show();
   delay(delayMs);
-}
-
-void saveLedStrip(void) {
-  if (_ledStrip.getBrightness() > 0) for (uint8_t i = 0; i < LEDS_SIZE; i++) _leds[i] = _ledStrip.getPixelColor(i);
-}
-
-void restoreLedStrip(void) {
-  if (_ledStrip.getBrightness() == 0) _ledStrip.setBrightness(1);
-  for (uint8_t i = 0; i < LEDS_SIZE; i++) _ledStrip.setPixelColor(i, _leds[i]);
 }
 
 uint8_t gammaCorrected(uint8_t p) {

@@ -29,7 +29,7 @@ bool debounce(int pin) {
       ret = reading;
       if (pin == BRIGHTNESS_BUTTON && !reading) {
         uint8_t b = _ledStrip.getBrightness();
-        if (b == 0) _ledStripOn = false;
+        if (b == 1) _ledStripOn = false;
         if (b == 255) _ledStripOn = true;
       }
 #if DEBUG
