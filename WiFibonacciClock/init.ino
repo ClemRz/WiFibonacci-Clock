@@ -22,18 +22,41 @@
 void initSerial(void) {
   Serial.begin(9600);
   Serial.println();
-  //Serial.setDebugOutput(true);
+  Serial.setDebugOutput(true);
 }
 
 void initDS3231(void) {
-  _clock.begin();
-  RTCDateTime dt = _clock.getDateTime();
-  if (dt.year == 2000) {
-    _clock.setDateTime(__DATE__, __TIME__);
-  }
 #if DEBUG
   Serial.println(F("DS3231 init"));
-  Serial.println(_clock.dateFormat("Y-m-d H:i:s", _clock.getDateTime()));
+#endif
+  _clock.Begin();
+  RtcDateTime compiledDateTime = RtcDateTime(__DATE__, __TIME__);
+  if (!_clock.IsDateTimeValid()) {
+#if DEBUG
+    Serial.println(F("DS3231 lost confidence in the DateTime, assigning compilation date and time."));
+    _clock.SetDateTime(compiledDateTime);
+#endif
+  }
+  if (!_clock.GetIsRunning()) {
+#if DEBUG
+  Serial.println(F("DS3231 was not actively running, starting now"));
+#endif
+    _clock.SetIsRunning(true);
+  }
+  RtcDateTime now = _clock.GetDateTime();
+  if (now < compiledDateTime) {
+    Serial.println(F("DS3231 is older than compile time!  (Updating DateTime)"));
+    _clock.SetDateTime(compiledDateTime);
+  } else if (now > compiledDateTime) {
+    Serial.println(F("DS3231 is newer than compile time. (this is expected)"));
+  } else if (now == compiledDateTime) {
+    Serial.println(F("DS3231 is the same as compile time! (not expected but all is fine)"));
+  }
+  _clock.Enable32kHzPin(false);
+  _clock.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
+#if DEBUG
+  Serial.println(F("DS3231 init"));
+  Serial.println(dateFormat("Y-m-d H:i:s", _clock.GetDateTime()));
 #endif
 }
 
@@ -43,8 +66,8 @@ void initLedStrip(void) {
 }
 
 void initRandom(void) {
-  RTCDateTime dt = _clock.getDateTime();
-  randomSeed(dt.unixtime);
+  RtcDateTime dt = _clock.GetDateTime();
+  randomSeed(dt.Epoch32Time());
 #if DEBUG
   Serial.print(F("Random init. Number (0 to 100): ")); Serial.println(random(101));
 #endif

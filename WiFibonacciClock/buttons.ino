@@ -57,16 +57,16 @@ void handleButtons(void) {
   } else
 #endif
   if (debounce(MODE_BUTTON)) {
-    _mode = (_mode + 1) % MODES_SIZE;
+    _modeIndex = (_modeIndex + 1) % MODES_SIZE;
     _refreshLedStrip = true;
 #if DEBUG
-    Serial.print(F("Mode: ")); Serial.println(_mode);
+    Serial.print(F("Mode: ")); Serial.println(_modeIndex);
 #endif
   } else if (debounce(PALETTE_BUTTON)) {
-    _palette = (_palette + 1) % PALETTES_SIZE;
+    _paletteIndex = (_paletteIndex + 1) % (sizeof(_palettes)/sizeof(Palette));
     _refreshLedStrip = true;
 #if DEBUG
-    Serial.print(F("Palette: ")); Serial.println(_palette);
+    Serial.print(F("Palette: ")); Serial.println(_paletteIndex);
 #endif
   }
 }

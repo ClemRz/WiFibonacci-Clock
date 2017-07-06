@@ -20,34 +20,25 @@
  */
 
 void handleModes(void) {
-  //if (_ledStripOn) {
-    //if (_ledStrip.getBrightness() < 255) {
-    //  fadeStripOn(RAINBOW_DELAY_MS);
-    //} else {
-      switch (_mode) {
-        case 0:
-          displayCurrentTime();
-          break;
-        case 1:
-          rainbowCycle(RAINBOW_DELAY_MS);
-          break;
-        case 2:
-          rainbow(RAINBOW_DELAY_MS);
-          break;
-        case 3:
-          flashlight();
-          break;
-      }
-    //}
-  //} else {
-    //turnStripOff();
-    //fadeStripOff(RAINBOW_DELAY_MS);
-  //}
+  switch (_modeIndex) {
+    case 0:
+      displayCurrentTime();
+      break;
+    case 1:
+      rainbowCycle(RAINBOW_DELAY_MS);
+      break;
+    case 2:
+      rainbow(RAINBOW_DELAY_MS);
+      break;
+    case 3:
+      flashlight();
+      break;
+  }
 }
 
 void displayCurrentTime() {
-  RTCDateTime dt = _clock.getDateTime();
-  setTime(dt.hour % 12, dt.minute);
+  RtcDateTime dt = _clock.GetDateTime();
+  setTime(dt.Hour() % 12, dt.Minute());
 }
 
 void rainbowCycle(uint8_t delayMs) {
@@ -116,7 +107,7 @@ void setTime(byte hours, byte minutes) {
     setBits(minutes/5, 0x02);
     
     for (int i=0; i<CLOCK_PIXELS; i++) {
-      setPixel(i, _colors[_palette][_bits[i]]);
+      setPixel(i, _palettes[_paletteIndex].colorAt[_bits[i]]);
     }
     _ledStrip.show();
   }

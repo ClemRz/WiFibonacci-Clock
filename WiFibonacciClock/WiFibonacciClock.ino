@@ -20,14 +20,17 @@
  */
 
 #include <Wire.h>
-#include <DS3231.h>
+#include <RtcDS3231.h>
 #include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <WebSocketsServer.h>
 #include <Hash.h>
+#include <ArduinoJson.h>
+#include "FS.h"
 #include "overrides.h"
+#include "structures.h"
 
 // General
 #define MICROSEC              1000000L
@@ -45,14 +48,16 @@
 #define DEBUG                 1
 #define FADING_STEP           3
 #define AP_SSID               "WiFibonacciClk"
-#define AP_PASSWORD           "123niab"
+#define AP_PASSWORD           "fibonacci"
 // ======================================
 
 // Pins
-#define BRIGHTNESS_BUTTON     5
-#define MODE_BUTTON           6
-#define PALETTE_BUTTON        7
-#define LED_DATA              8               // Pin connected to strip's data wire
+#define SDA                   4               // I2C data
+#define SCL                   5               // I2C clock
+#define MODE_BUTTON           12
+#define PALETTE_BUTTON        13
+#define BRIGHTNESS_BUTTON     16
+#define LED_DATA              14               // Pin connected to strip's data wire
 
 // Serial
 #define DS3231_I2C_ADDRESS    0x68            // RTC I2C address
@@ -62,11 +67,18 @@
 #define DEBOUNCE_DELAY_MS     10L
 
 // Clock
-#define PALETTES_SIZE         10
 #define MODES_SIZE            4
 #define LEDS_SIZE             9               // Number of LEDs
 #define CLOCK_PIXELS          5               // Number of fisical cells
 #define RAINBOW_DELAY_MS      20
+
+// File system configs
+#define PALETTES_FILE_PATH    "/palettes.json"
+#define SETTINGS_FILE_PATH    "/settings.json"
+
+// Defaults
+#define DEFAULT_PALETTES      "[{\"off\":{\"r\":255,\"g\":255,\"b\":255},\"hours\":{\"r\":255,\"g\":10,\"b\":10},\"minutes\":{\"r\":10,\"g\":255,\"b\":10},\"both\":{\"r\":10,\"g\":10,\"b\":255}}]"
+#define DEFAULT_SETTINGS      ""
 
 // Gamma Correction (See https://learn.adafruit.com/led-tricks-gamma-correction)
 const uint8_t PROGMEM GAMMA_8[] = {
@@ -88,11 +100,13 @@ const uint8_t PROGMEM GAMMA_8[] = {
   215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255};
 
 // Global variables
+Settings _settings;
+Palette _palettes[10]; //TODO use vectors to get a dynamic array of Palette
 unsigned long _lastDebounceTime = 0;
 uint8_t _brightness = 255;
 int
-  _palette = 0,
-  _mode = 0,
+  _paletteIndex = 0,
+  _modeIndex = 0,
   _j = 0;
 bool
   _lastButtonState[BUTTONS_SIZE],
@@ -103,66 +117,12 @@ byte
   _bits[CLOCK_PIXELS],
   _hours = 0,
   _minutes = 0;
-DS3231 _clock;
+RtcDS3231<TwoWire> _clock(Wire);
 Adafruit_NeoPixel _ledStrip = Adafruit_NeoPixel(LEDS_SIZE, LED_DATA, NEO_RGB + NEO_KHZ800);
 MyWebSocketsServer webSocket = MyWebSocketsServer(81);
 
 // Global constants
-const uint32_t
-  _black = _ledStrip.Color(0, 0, 0),
-  _white = _ledStrip.Color(255, 255, 255),
-  _colors[PALETTES_SIZE][4] = {
-{     // #1 RGB
-  _white,                          // off
-  _ledStrip.Color(255, 10, 10),    // hours
-  _ledStrip.Color(10, 255, 10),    // minutes
-  _ledStrip.Color(10, 10, 255)     // both;
-}, {  // #2 Mondrian
-  _white,                          // off
-  _ledStrip.Color(255, 10, 10),    // hours
-  _ledStrip.Color(248, 222, 0),    // minutes
-  _ledStrip.Color(10, 10, 255)     // both;
-}, {  // #3 Basbrun
-  _white,                          // off
-  _ledStrip.Color(80, 40, 0),      // hours
-  _ledStrip.Color(20, 200, 20),    // minutes
-  _ledStrip.Color(255, 100, 10)    // both;
-}, {  // #4 80's
-  _white,                          // off
-  _ledStrip.Color(245, 100, 201),  // hours
-  _ledStrip.Color(114, 247, 54),   // minutes
-  _ledStrip.Color(113, 235, 219)   // both;
-}, {  // #5 Pastel
-  _white,                          // off
-  _ledStrip.Color(255, 123, 123),  // hours
-  _ledStrip.Color(143, 255, 112),  // minutes
-  _ledStrip.Color(120, 120, 255)   // both;
-}, {  // #6 Modern
-  _white,                          // off
-  _ledStrip.Color(212, 49, 45),    // hours
-  _ledStrip.Color(145, 210, 49),   // minutes
-  _ledStrip.Color(141, 95, 224)    // both;
-}, {  // #7 Cold
-  _white,                          // off
-  _ledStrip.Color(209, 62, 200),   // hours
-  _ledStrip.Color(69, 232, 224),   // minutes
-  _ledStrip.Color(80, 70, 202)     // both;
-}, {  // #8 Warm
-  _white,                          // off
-  _ledStrip.Color(237, 20, 20),    // hours
-  _ledStrip.Color(246, 243, 54),   // minutes
-  _ledStrip.Color(255, 126, 21)    // both;
-}, {  // #9 Earth
-  _white,                          // off
-  _ledStrip.Color(70, 35, 0),      // hours
-  _ledStrip.Color(70, 122, 10),    // minutes
-  _ledStrip.Color(200, 182, 0)     // both;
-}, {  // #10 Dark
-  _white,                          // off
-  _ledStrip.Color(211, 34, 34),    // hours
-  _ledStrip.Color(80, 151, 78),    // minutes
-  _ledStrip.Color(16, 24, 149)     // both;
-}};
+const uint32_t _white = _ledStrip.Color(255, 255, 255);
 
 void setup(void) {
 #if DEBUG
@@ -173,6 +133,7 @@ void setup(void) {
   initLedStrip();
   initRandom();
   initAP();
+  initWebSocket();
 }
 
 void loop(void) {
