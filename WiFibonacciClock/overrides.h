@@ -22,8 +22,6 @@
 #ifndef _OVERRIDES_H
 #define _OVERRIDES_H
 
-//#include "WebSocketsServer.h"
-
 class MyWebSocketsServer: public WebSocketsServer {
   public:
     MyWebSocketsServer(uint16_t port);
@@ -41,6 +39,5 @@ void MyWebSocketsServer::handleNonWebsocketConnection(WSclient_t * client) {
 }
 
 MyWebSocketsServer::MyWebSocketsServer(uint16_t port) : WebSocketsServer(port) {}
-
 
 #endif  //_OVERRIDES_H

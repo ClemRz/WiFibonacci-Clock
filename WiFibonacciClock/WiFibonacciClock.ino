@@ -19,18 +19,26 @@
     Source code inspired from Fibonacci Clock https://github.com/pchretien/fibo
  */
 
-#include <Wire.h>
-#include <RtcDS3231.h>
-#include <Adafruit_NeoPixel.h>
-#include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <WebSocketsServer.h>
-#include <Hash.h>
-#include <ArduinoJson.h>
-#include "FS.h"
-#include "overrides.h"
-#include "structures.h"
+/*#include <StandardCplusplus.h>    // https://github.com/maniacbug/StandardCplusplus
+#include <serstream>              // https://github.com/maniacbug/StandardCplusplus
+#include <vector>                 // https://github.com/maniacbug/StandardCplusplus
+#include <iterator>               // https://github.com/maniacbug/StandardCplusplus */
+#include <Wire.h>                 // https://github.com/esp8266/Arduino/
+#include <ESP8266WiFi.h>          // https://github.com/esp8266/Arduino/
+#include <WiFiClient.h>           // https://github.com/esp8266/Arduino/
+#include <Hash.h>                 // https://github.com/esp8266/Arduino/
+#include <algorithm>              // https://github.com/esp8266/Arduino/
+#include "FS.h"                   // https://github.com/esp8266/Arduino/
+#include <RtcDS3231.h>            // https://github.com/Makuna/Rtc
+#include <Adafruit_NeoPixel.h>    // https://github.com/adafruit/Adafruit_NeoPixel
+#include <WebSocketsServer.h>     // https://github.com/Links2004/arduinoWebSockets
+//#include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
+#include <JsonParser.h>           // https://github.com/henrikekblad/ArduinoJson
+#include <JsonGenerator.h>        // https://github.com/henrikekblad/ArduinoJson
+#include "overrides.h"            // https://gist.github.com/ClemRz/88b5ba77cd73a0035fd2fc6a843acb55
+#include "structures.h"           // https://github.com/ClemRz/Introduction-to-IoT#use-structures
+
+using namespace ArduinoJson;
 
 // General
 #define MICROSEC              1000000L
@@ -73,7 +81,7 @@
 #define RAINBOW_DELAY_MS      20
 
 // File system configs
-#define PALETTES_FILE_PATH    "/palettes.json"
+#define PALETTES_PATH         "/palettes/"
 #define SETTINGS_FILE_PATH    "/settings.json"
 
 // Defaults
@@ -101,7 +109,7 @@ const uint8_t PROGMEM GAMMA_8[] = {
 
 // Global variables
 Settings _settings;
-Palette _palettes[10]; //TODO use vectors to get a dynamic array of Palette
+std::vector<Palette> _palettesV;
 unsigned long _lastDebounceTime = 0;
 uint8_t _brightness = 255;
 int
@@ -119,7 +127,7 @@ byte
   _minutes = 0;
 RtcDS3231<TwoWire> _clock(Wire);
 Adafruit_NeoPixel _ledStrip = Adafruit_NeoPixel(LEDS_SIZE, LED_DATA, NEO_RGB + NEO_KHZ800);
-MyWebSocketsServer webSocket = MyWebSocketsServer(81);
+MyWebSocketsServer _webSocket = MyWebSocketsServer(81);
 
 // Global constants
 const uint32_t _white = _ledStrip.Color(255, 255, 255);
@@ -128,6 +136,7 @@ void setup(void) {
 #if DEBUG
   initSerial();
 #endif
+  initFS();
   initButtons();
   initDS3231();
   initLedStrip();
@@ -139,6 +148,6 @@ void setup(void) {
 void loop(void) {
   handleButtons();
   handleModes();
-  webSocket.loop();
+  _webSocket.loop();
 }
 

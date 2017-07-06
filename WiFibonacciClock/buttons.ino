@@ -63,7 +63,7 @@ void handleButtons(void) {
     Serial.print(F("Mode: ")); Serial.println(_modeIndex);
 #endif
   } else if (debounce(PALETTE_BUTTON)) {
-    _paletteIndex = (_paletteIndex + 1) % (sizeof(_palettes)/sizeof(Palette));
+    _paletteIndex = (_paletteIndex + 1) % _palettesV.size();
     _refreshLedStrip = true;
 #if DEBUG
     Serial.print(F("Palette: ")); Serial.println(_paletteIndex);

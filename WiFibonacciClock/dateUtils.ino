@@ -19,6 +19,9 @@
     Source code inspired from Fibonacci Clock https://github.com/pchretien/fibo
  */
 
+/*
+ * This code is inspired from jarzebski's DS3231 library: https://github.com/jarzebski/Arduino-DS3231
+ */
 const uint8_t DAYS_ARRAY [] PROGMEM = {31,28,31,30,31,30,31,31,30,31,30,31};
 
 char* dateFormat(const char* dateFormat, RtcDateTime dt) {

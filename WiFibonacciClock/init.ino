@@ -89,7 +89,13 @@ void initAP(void) {
 }
 
 void initWebSocket(void) {
-  webSocket.begin();
-  webSocket.onEvent(webSocketEvent);
+  _webSocket.begin();
+  _webSocket.onEvent(webSocketEvent);
+}
+
+void initFS(void) {
+  SPIFFS.begin();
+  readPalettes();
+  readSettings();
 }
 
