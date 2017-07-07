@@ -38,9 +38,9 @@ bool debounce(int pin) {
     } else {
       if (pin == BRIGHTNESS_BUTTON && reading) {
         if (_ledStripOn) {
-          fadeStripOff(RAINBOW_DELAY_MS);
+          fadeStripOff(FADING_DELAY_MS);
         } else {
-          fadeStripOn(RAINBOW_DELAY_MS);
+          fadeStripOn(FADING_DELAY_MS);
         }
       }
     }

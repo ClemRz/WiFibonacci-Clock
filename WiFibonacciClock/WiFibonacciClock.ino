@@ -50,9 +50,16 @@ using namespace ArduinoJson;
  * ======================================
 */
 #define DEBUG                 1
-#define FADING_STEP           3
 #define AP_SSID               "WiFibonacciClk"
 #define AP_PASSWORD           "fibonacci"
+
+/* 
+ * ======================================
+ *      User defined settings
+ * ======================================
+*/
+#define RAINBOW_DELAY_MS      20
+//const uint32_t _white = _ledStrip.Color(255, 255, 255);
 // ======================================
 
 // Pins
@@ -67,14 +74,15 @@ using namespace ArduinoJson;
 #define DS3231_I2C_ADDRESS    0x68            // RTC I2C address
 
 // Buttons
-#define BUTTONS_SIZE          9               // Max button pin + 1
+#define BUTTONS_SIZE          17              // Max button pin + 1
 #define DEBOUNCE_DELAY_MS     10L
 
 // Clock
 #define MODES_SIZE            4
 #define LEDS_SIZE             9               // Number of LEDs
 #define CLOCK_PIXELS          5               // Number of fisical cells
-#define RAINBOW_DELAY_MS      20
+#define FADING_DELAY_MS       8               // Delay between each steps
+#define FADING_STEP           1               // 214 steps total means a delay of 214/1*8 = 1,712ms to fade the complete range aprox.
 
 // File system configs
 #define PALETTES_PATH         "/palettes"
@@ -85,25 +93,6 @@ using namespace ArduinoJson;
 // Defaults
 #define DEFAULT_PALETTE       "[[255, 255, 255],[255, 10, 10],[10, 255, 10],[10, 10, 255]]"
 #define DEFAULT_SETTINGS      ""
-
-// Gamma Correction (See https://learn.adafruit.com/led-tricks-gamma-correction)
-const uint8_t PROGMEM GAMMA_8[] = {
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
-    1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,
-    2,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,
-    5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  9,  9,  9, 10,
-   10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16,
-   17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 24, 24, 25,
-   25, 26, 27, 27, 28, 29, 29, 30, 31, 32, 32, 33, 34, 35, 35, 36,
-   37, 38, 39, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 50,
-   51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68,
-   69, 70, 72, 73, 74, 75, 77, 78, 79, 81, 82, 83, 85, 86, 87, 89,
-   90, 92, 93, 95, 96, 98, 99,101,102,104,105,107,109,110,112,114,
-  115,117,119,120,122,124,126,127,129,131,133,135,137,138,140,142,
-  144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175,
-  177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
-  215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255};
 
 // Global variables
 Settings _settings;
