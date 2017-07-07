@@ -24,7 +24,7 @@ bool loadPaletteJson(char* json) {
   Parser::JsonArray p = parser.parse(json);
   if (p.success()) {
     Palette palette;
-    for (uint8_t i = 0; i < 4; i++) palette.colorAt[i] = _ledStrip.Color((int)p[i][0], (int)p[i][1], (int)p[i][2]);
+    for (uint8_t i = 0; i < 4; i++) palette.at[i] = _ledStrip.Color((int)p[i][0], (int)p[i][1], (int)p[i][2]);
     _palettesV.push_back(palette);
     return true;
 #if DEBUG
@@ -41,7 +41,7 @@ void loadDefaultPalette(void) {
   Parser::JsonArray p = parser.parse(DEFAULT_PALETTE);
   if (p.success()) {
     Palette palette;
-    for (uint8_t i = 0; i < 4; i++) palette.colorAt[i] = _ledStrip.Color((int)p[i][0], (int)p[i][1], (int)p[i][2]);
+    for (uint8_t i = 0; i < 4; i++) palette.at[i] = _ledStrip.Color((int)p[i][0], (int)p[i][1], (int)p[i][2]);
     _palettesV.push_back(palette);
 #if DEBUG
   } else {
@@ -51,10 +51,10 @@ void loadDefaultPalette(void) {
 }
 
 bool loadSettingsJson(char* json) {
-  
+  _flashLightColor = _settings.flashLightColor;
 }
 
 void loadDefaultSettings(void) {
-  
+  _flashLightColor = _ledStrip.Color(255, 255, 255);
 }
 

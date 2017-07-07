@@ -28,7 +28,6 @@
 #include <RtcDS3231.h>            // https://github.com/Makuna/Rtc
 #include <Adafruit_NeoPixel.h>    // https://github.com/adafruit/Adafruit_NeoPixel
 #include <WebSocketsServer.h>     // https://github.com/Links2004/arduinoWebSockets
-//#include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <JsonParser.h>           // https://github.com/henrikekblad/ArduinoJson
 #include <JsonGenerator.h>        // https://github.com/henrikekblad/ArduinoJson
 #include "overrides.h"            // https://gist.github.com/ClemRz/88b5ba77cd73a0035fd2fc6a843acb55
@@ -99,6 +98,7 @@ Settings _settings;
 std::vector<Palette> _palettesV;
 unsigned long _lastDebounceTime = 0;
 uint8_t _brightness = 255;
+uint32_t _flashLightColor;
 int
   _paletteIndex = 0,
   _modeIndex = 0,
@@ -115,9 +115,6 @@ byte
 RtcDS3231<TwoWire> _clock(Wire);
 Adafruit_NeoPixel _ledStrip = Adafruit_NeoPixel(LEDS_SIZE, LED_DATA, NEO_RGB + NEO_KHZ800);
 MyWebSocketsServer _webSocket = MyWebSocketsServer(81);
-
-// Global constants
-const uint32_t _white = _ledStrip.Color(255, 255, 255);
 
 void setup(void) {
 #if DEBUG

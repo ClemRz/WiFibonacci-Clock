@@ -24,15 +24,13 @@
 
 typedef struct {
   struct {
-    int wakeUpRate;
-    bool doorStatus;
-    char url[200];
+    uint32_t flashLightColor;
   };
 } Settings;
 
 typedef struct {
   union {
-    uint32_t colorAt[4];
+    uint32_t at[4];
     struct {
       uint32_t off;
       uint32_t hours;

@@ -75,7 +75,7 @@ void rainbow(uint8_t delayMs) {
 }
 
 void flashlight(void) {
-  for (int i=0; i<CLOCK_PIXELS; i++) setPixel(i, _white);
+  for (int i=0; i<CLOCK_PIXELS; i++) setPixel(i, _flashLightColor);
   _ledStrip.show();
 }
 
@@ -126,7 +126,7 @@ void setTime(byte hours, byte minutes) {
     setBits(minutes/5, 0x02);
     
     for (int i=0; i<CLOCK_PIXELS; i++) {
-      setPixel(i, _palettesV.at(_paletteIndex).colorAt[_bits[i]]);
+      setPixel(i, _palettesV.at(_paletteIndex).at[_bits[i]]);
     }
     _ledStrip.show();
   }
