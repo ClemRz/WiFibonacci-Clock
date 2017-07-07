@@ -19,10 +19,6 @@
     Source code inspired from Fibonacci Clock https://github.com/pchretien/fibo
  */
 
-/*#include <StandardCplusplus.h>    // https://github.com/maniacbug/StandardCplusplus
-#include <serstream>              // https://github.com/maniacbug/StandardCplusplus
-#include <vector>                 // https://github.com/maniacbug/StandardCplusplus
-#include <iterator>               // https://github.com/maniacbug/StandardCplusplus */
 #include <Wire.h>                 // https://github.com/esp8266/Arduino/
 #include <ESP8266WiFi.h>          // https://github.com/esp8266/Arduino/
 #include <WiFiClient.h>           // https://github.com/esp8266/Arduino/
@@ -81,11 +77,13 @@ using namespace ArduinoJson;
 #define RAINBOW_DELAY_MS      20
 
 // File system configs
-#define PALETTES_PATH         "/palettes/"
+#define PALETTES_PATH         "/palettes"
 #define SETTINGS_FILE_PATH    "/settings.json"
+#define PALETTE_TYPE          1
+#define SETTINGS_TYPE         2
 
 // Defaults
-#define DEFAULT_PALETTES      "[{\"off\":{\"r\":255,\"g\":255,\"b\":255},\"hours\":{\"r\":255,\"g\":10,\"b\":10},\"minutes\":{\"r\":10,\"g\":255,\"b\":10},\"both\":{\"r\":10,\"g\":10,\"b\":255}}]"
+#define DEFAULT_PALETTE       "[[255, 255, 255],[255, 10, 10],[10, 255, 10],[10, 10, 255]]"
 #define DEFAULT_SETTINGS      ""
 
 // Gamma Correction (See https://learn.adafruit.com/led-tricks-gamma-correction)

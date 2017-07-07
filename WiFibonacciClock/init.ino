@@ -95,7 +95,17 @@ void initWebSocket(void) {
 
 void initFS(void) {
   SPIFFS.begin();
-  readPalettes();
-  readSettings();
+  if (!readPalettes()) {
+#if DEBUG
+    Serial.println(F("Loading default palette"));
+#endif
+    loadDefaultPalette();
+  }
+  if (!readSettings()) {
+#if DEBUG
+    Serial.println(F("Loading default settings"));
+#endif
+    loadDefaultSettings();
+  }
 }
 

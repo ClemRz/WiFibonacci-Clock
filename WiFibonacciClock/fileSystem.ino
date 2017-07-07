@@ -19,35 +19,49 @@
     Source code inspired from Fibonacci Clock https://github.com/pchretien/fibo
  */
 
-void readPalettes(void) {
-  uint8_t n = 0;
-  while(readPalette(n)) yield();
+bool readPalettes(void) {
+  bool success = false;
+  Dir dir = SPIFFS.openDir(PALETTES_PATH);
+  while(dir.next()){
+    File palette = dir.openFile("r");
+    success = success || readFile(palette, PALETTE_TYPE);
+    palette.close();
+    yield();
+  }
+  return success;
 }
 
-bool readPalette(uint8_t n) {
+void writePalettes(void) {
+  
+}
+
+bool readSettings(void) {
+  
+}
+
+void writeSettings(void) {
+  
+}
+
+bool readFile(File file, uint8_t type) {
   bool success = false;
-  String file_path = (String)PALETTES_PATH + F("p") + n + F(".json");
-#if DEBUG
-  Serial.print(F("Reading ")); Serial.println(file_path);
-#endif
-  File file = SPIFFS.open(file_path, "r");
   if (file) {
+    String file_path = (String)PALETTES_PATH + file.name();
+#if DEBUG
+    Serial.print(F("Reading ")); Serial.println(file_path);
+#endif
     size_t size = file.size();
     if (size <= 1024) {
       std::unique_ptr<char[]> buf(new char[size]);
       file.readBytes(buf.get(), size);
       file.close();
-      Parser::JsonParser<17> parser; // one palette is 1+4*(3+1)=17 tokens
-      Parser::JsonArray p = parser.parse(buf.get());
-      if (p.success()) {
-        Palette palette;
-        for (uint8_t i = 0; i < 4; i++) palette.colorAt[i] = _ledStrip.Color((int)p[i][0], (int)p[i][1], (int)p[i][2]);
-        _palettesV.push_back(palette);
-        success = true;
-#if DEBUG
-      } else {
-        Serial.println(F("JSON parsing failed"));
-#endif
+      switch (type) {
+        case PALETTE_TYPE:
+          success = loadPaletteJson(buf.get());
+          break;
+        case SETTINGS_TYPE:
+          success = loadSettingsJson(buf.get());
+          break;
       }
 #if DEBUG
     } else {
@@ -59,23 +73,6 @@ bool readPalette(uint8_t n) {
     Serial.println(F("file open failed"));
 #endif
   }
-  if (!success) {
-    //_cfg.wakeUpRate = DEFAULT_WAKE_UP_RATE;
-    //_cfg.doorStatus = VACANT;
-    //strcpy(_cfg.url, DEFAULT_URL);
-  }
   return success;
-}
-
-void readSettings(void) {
-  
-}
-
-void writePalettes(void) {
-  
-}
-
-void writeSettings(void) {
-  
 }
 
