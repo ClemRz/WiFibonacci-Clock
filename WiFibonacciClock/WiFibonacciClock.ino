@@ -36,69 +36,59 @@
 using namespace ArduinoJson;
 
 // General
-#define MICROSEC              1000000L
-#define MILLISEC              1000L
-#define SEC                   1L
-#define MINUTE                (unsigned int) 60L*SEC
-#define HOUR                  (unsigned int) 60L*MINUTE
-#define DAY                   (unsigned long) 24L*HOUR
+#define MICROSEC                  1000000L
+#define MILLISEC                  1000L
+#define SEC                       1L
+#define MINUTE                    (unsigned int) 60L*SEC
+#define HOUR                      (unsigned int) 60L*MINUTE
+#define DAY                       (unsigned long) 24L*HOUR
 
 /* 
  * ======================================
  *      User defined constants
  * ======================================
 */
-#define DEBUG                 1
-#define AP_SSID               "WiFibonacciClk"
-#define AP_PASSWORD           "fibonacci"
-
-/* 
- * ======================================
- *      User defined settings
- * ======================================
-*/
-#define RAINBOW_DELAY_MS      20
-//const uint32_t _white = _ledStrip.Color(255, 255, 255);
-// ======================================
+#define DEBUG                     1
+#define AP_SSID                   "WiFibonacciClk"
+#define AP_PASSWORD               "fibonacci"
 
 // Pins
-#define SDA                   4               // I2C data
-#define SCL                   5               // I2C clock
-#define MODE_BUTTON           12
-#define PALETTE_BUTTON        13
-#define BRIGHTNESS_BUTTON     16
-#define LED_DATA              14               // Pin connected to strip's data wire
+#define SDA                       4               // I2C data
+#define SCL                       5               // I2C clock
+#define MODE_BUTTON               12
+#define PALETTE_BUTTON            13
+#define BRIGHTNESS_BUTTON         16
+#define LED_DATA                  14               // Pin connected to strip's data wire
 
 // Serial
-#define DS3231_I2C_ADDRESS    0x68            // RTC I2C address
+#define DS3231_I2C_ADDRESS        0x68            // RTC I2C address
 
 // Buttons
-#define BUTTONS_SIZE          17              // Max button pin + 1
-#define DEBOUNCE_DELAY_MS     10L
+#define BUTTONS_SIZE              17              // Max button pin + 1
+#define DEBOUNCE_DELAY_MS         10L
 
 // Clock
-#define MODES_SIZE            4
-#define LEDS_SIZE             9               // Number of LEDs
-#define CLOCK_PIXELS          5               // Number of fisical cells
-#define FADING_DELAY_MS       8               // Delay between each steps
-#define FADING_STEP           1               // 214 steps total means a delay of 214/1*8 = 1,712ms to fade the complete range aprox.
+#define MODES_SIZE                4
+#define LEDS_SIZE                 9               // Number of LEDs
+#define CLOCK_PIXELS              5               // Number of fisical cells
+#define FADING_DELAY_MS           8               // Delay between each steps
+#define FADING_STEP               1               // 214 steps total means a delay of 214/1*8 = 1,712ms to fade the complete range aprox.
 
 // File system configs
-#define PALETTES_PATH         "/palettes"
-#define SETTINGS_FILE_PATH    "/settings.json"
-#define PALETTE_TYPE          1
-#define SETTINGS_TYPE         2
+#define PALETTES_PATH             "/palettes"
+#define SETTINGS_FILE_PATH        "/settings.json"
+#define PALETTE_TYPE              1
+#define SETTINGS_TYPE             2
 
 // Defaults
-#define DEFAULT_PALETTE       "[[255, 255, 255],[255, 10, 10],[10, 255, 10],[10, 10, 255]]"
-#define DEFAULT_SETTINGS      ""
+#define DEFAULT_PALETTE           "[[255,255,255],[255,10,10],[10,255,10],[10,10,255]]"
+#define DEFAULT_SETTINGS          "{\"flashlightColor\":[255,255,255],\"rainbowDelay\":20,\"pulse\":{\"color\":[255,179,48],\"delay\":20}}"
 
 // Global variables
 Settings _settings;
 std::vector<Palette> _palettesV;
 unsigned long _lastDebounceTime = 0;
 uint8_t _brightness = 255;
-uint32_t _flashLightColor;
 int
   _paletteIndex = 0,
   _modeIndex = 0,

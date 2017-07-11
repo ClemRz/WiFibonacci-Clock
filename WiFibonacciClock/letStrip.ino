@@ -44,10 +44,10 @@ void handleModes(void) {
       displayCurrentTime();
       break;
     case 1:
-      rainbowCycle(RAINBOW_DELAY_MS);
+      rainbowCycle(_settings.rainbowDelay);
       break;
     case 2:
-      rainbow(RAINBOW_DELAY_MS);
+      rainbow(_settings.rainbowDelay);
       break;
     case 3:
       flashlight();
@@ -75,7 +75,7 @@ void rainbow(uint8_t delayMs) {
 }
 
 void flashlight(void) {
-  for (int i=0; i<CLOCK_PIXELS; i++) setPixel(i, _flashLightColor);
+  for (int i=0; i<CLOCK_PIXELS; i++) setPixel(i, _settings.flashLightColor);
   _ledStrip.show();
 }
 

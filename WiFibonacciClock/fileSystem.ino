@@ -36,7 +36,11 @@ void writePalettes(void) {
 }
 
 bool readSettings(void) {
-  
+  bool success = false;
+  File settings = SPIFFS.open(SETTINGS_FILE_PATH, "r");
+  success = success || readFile(settings, SETTINGS_TYPE);
+  settings.close();
+  return success;
 }
 
 void writeSettings(void) {

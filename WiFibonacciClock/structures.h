@@ -25,6 +25,9 @@
 typedef struct {
   struct {
     uint32_t flashLightColor;
+    uint32_t pulseColor;
+    unsigned long rainbowDelay;
+    unsigned long pulseDelay;
   };
 } Settings;
 

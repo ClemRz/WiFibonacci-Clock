@@ -36,25 +36,27 @@ bool loadPaletteJson(char* json) {
 }
 
 void loadDefaultPalette(void) {
-  Parser::JsonParser<17> parser; // one palette is 1+4*(3+1)=17 tokens
-  
-  Parser::JsonArray p = parser.parse(DEFAULT_PALETTE);
+  loadPaletteJson(DEFAULT_PALETTE);
+}
+
+bool loadSettingsJson(char* json) {
+  Parser::JsonParser<17> parser;
+  Parser::JsonObject p = parser.parse(json);
   if (p.success()) {
-    Palette palette;
-    for (uint8_t i = 0; i < 4; i++) palette.at[i] = _ledStrip.Color((int)p[i][0], (int)p[i][1], (int)p[i][2]);
-    _palettesV.push_back(palette);
+    _settings.flashLightColor = _ledStrip.Color((int)p["flashlightColor"][0], (int)p["flashlightColor"][1], (int)p["flashlightColor"][2]);
+    _settings.rainbowDelay = (long)p["rainbowDelay"];
+    _settings.pulseColor = _ledStrip.Color((int)p["pulse"]["color"][0], (int)p["pulse"]["color"][1], (int)p["pulse"]["color"][2]);
+    _settings.pulseDelay = (long)p["pulse"]["delay"];
+    return true;
 #if DEBUG
   } else {
     Serial.println(F("JSON parsing failed"));
 #endif
   }
-}
-
-bool loadSettingsJson(char* json) {
-  _flashLightColor = _settings.flashLightColor;
+  return false;
 }
 
 void loadDefaultSettings(void) {
-  _flashLightColor = _ledStrip.Color(255, 255, 255);
+  loadSettingsJson(DEFAULT_SETTINGS);
 }
 
