@@ -50,6 +50,8 @@ void handleModes(void) {
       rainbow(_settings.rainbowDelay);
       break;
     case 3:
+      pulse(_settings.pulseColor, _settings.pulseDelay);
+    case 4:
       flashlight();
       break;
   }
@@ -79,7 +81,21 @@ void flashlight(void) {
   _ledStrip.show();
 }
 
-void fadeStripOff(uint8_t delayMs) {
+void pulse(uint32_t color, unsigned long delay) {
+  for(uint8_t i = 0; i < CLOCK_PIXELS; i++) setPixel(i, color);
+  switchLedStripStatus();
+  fadeLedStrip(delay);
+}
+
+void fadeLedStrip(unsigned long delay) {
+  if (_ledStripOn) {
+    fadeLedStripOff(delay);
+  } else {
+    fadeLedStripOn(delay);
+  }
+}
+
+void fadeLedStripOff(uint8_t delayMs) {
   _brightness = _brightness > FADING_STEP ? _brightness - FADING_STEP : 0;
   uint8_t b = gammaCorrected(_brightness);
   _ledStrip.setBrightness(b == 0 ? 1 : b);
@@ -87,12 +103,18 @@ void fadeStripOff(uint8_t delayMs) {
   delay(delayMs);
 }
 
-void fadeStripOn(uint8_t delayMs) {
+void fadeLedStripOn(uint8_t delayMs) {
   _brightness = _brightness < 255 - FADING_STEP ? _brightness + FADING_STEP : 255;
   uint8_t b = gammaCorrected(_brightness);
   _ledStrip.setBrightness(b == 0 ? 1 : b);
   _ledStrip.show();
   delay(delayMs);
+}
+
+void switchLedStripStatus(void) {
+  uint8_t b = _ledStrip.getBrightness();
+  if (b == 1) _ledStripOn = false;
+  if (b == 255) _ledStripOn = true;
 }
 
 uint8_t gammaCorrected(uint8_t p) {

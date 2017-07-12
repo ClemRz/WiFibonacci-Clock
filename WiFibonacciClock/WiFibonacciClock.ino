@@ -68,7 +68,7 @@ using namespace ArduinoJson;
 #define DEBOUNCE_DELAY_MS         10L
 
 // Clock
-#define MODES_SIZE                4
+#define MODES_SIZE                5
 #define LEDS_SIZE                 9               // Number of LEDs
 #define CLOCK_PIXELS              5               // Number of fisical cells
 #define FADING_DELAY_MS           8               // Delay between each steps

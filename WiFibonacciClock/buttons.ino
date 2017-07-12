@@ -27,22 +27,12 @@ bool debounce(int pin) {
     if (reading != _currentButtonState[pin]) {
       _currentButtonState[pin] = reading;
       ret = reading;
-      if (pin == BRIGHTNESS_BUTTON && !reading) {
-        uint8_t b = _ledStrip.getBrightness();
-        if (b == 1) _ledStripOn = false;
-        if (b == 255) _ledStripOn = true;
-      }
+      if (pin == BRIGHTNESS_BUTTON && !reading) switchLedStripStatus();
 #if DEBUG
       Serial.print(F("Button ")); Serial.print(pin); Serial.print(F(" changed to ")); Serial.println(reading); 
 #endif
-    } else {
-      if (pin == BRIGHTNESS_BUTTON && reading) {
-        if (_ledStripOn) {
-          fadeStripOff(FADING_DELAY_MS);
-        } else {
-          fadeStripOn(FADING_DELAY_MS);
-        }
-      }
+    } else if (pin == BRIGHTNESS_BUTTON && reading) {
+      fadeLedStrip(FADING_DELAY_MS);
     }
   }
 
