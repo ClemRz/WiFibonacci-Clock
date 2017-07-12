@@ -1,8 +1,8 @@
 {
-	"flashlightColor": [255, 255, 255],
+	"flashlightColor": "ffffff",
 	"rainbowDelay": 20,
 	"pulse": {
-		"color": [255, 179, 48],
+		"color": "ffb330",
 		"delay": 20
 	}
 }

@@ -32,10 +32,10 @@ void MyWebSocketsServer::handleNonWebsocketConnection(WSclient_t * client) {
   client->tcp->write("HTTP/1.1 200 OK\r\n"
           "Server: arduino-WebSocket-Server\r\n"
           "Content-Type: text/html\r\n"
-          "Content-Length: 1099\r\n"
+          "Content-Length: 384\r\n"
           "Connection: close\r\n"
           "\r\n"
-          "<!DOCTYPE html><html><head><script>function sendRGB(){var n=parseInt(document.getElementById('r').value).toString(16),e=parseInt(document.getElementById('g').value).toString(16),o=parseInt(document.getElementById('b').value).toString(16);n.length<2&&(n='0'+n),e.length<2&&(e='0'+e),o.length<2&&(o='0'+o);var t='#'+n+e+o;console.log('RGB: '+t),connection.send(t)}var connection=new WebSocket('ws://192.168.4.1:81/',['arduino']);connection.onopen=function(){connection.send('Message from Browser to ESP8266 yay its Working!! '+new Date),connection.send('ping'),connection.send('Time: '+new Date)},connection.onerror=function(n){console.log('WebSocket Error ',n)},connection.onmessage=function(n){console.log('Server: ',n.data),connection.send('Time: '+new Date)};</script></head><body>LED Control:<br><br>R: <input id=\"r\" type=\"range\" min=\"0\" max=\"255\" step=\"1\" oninput=\"sendRGB();\"><br>G: <input id=\"g\" type=\"range\" min=\"0\" max=\"255\" step=\"1\" oninput=\"sendRGB();\"><br>B: <input id=\"b\" type=\"range\" min=\"0\" max=\"255\" step=\"1\" oninput=\"sendRGB();\"><br></body></html>");
+          "<!DOCTYPE html><html><head><script>var c=new WebSocket('ws://192.168.4.1:81/',['arduino']);c.onopen=function(){},c.onerror=function(n){},c.onmessage=function(n){};</script></head><body>FlashLight color: <input type=\"color\" value=\"#ffffff\" oninput=\"c.send('f'+this.value)\"><br>Pulse color: <input type=\"color\" value=\"#ffb330\" oninput=\"c.send('p'+this.value)\"></body></html>");
 }
 
 MyWebSocketsServer::MyWebSocketsServer(uint16_t port) : WebSocketsServer(port) {}

@@ -45,12 +45,16 @@ void initDS3231(void) {
   }
   RtcDateTime now = _clock.GetDateTime();
   if (now < compiledDateTime) {
+#if DEBUG
     Serial.println(F("DS3231 is older than compile time!  (Updating DateTime)"));
+#endif
     _clock.SetDateTime(compiledDateTime);
+#if DEBUG
   } else if (now > compiledDateTime) {
     Serial.println(F("DS3231 is newer than compile time. (this is expected)"));
   } else if (now == compiledDateTime) {
     Serial.println(F("DS3231 is the same as compile time! (not expected but all is fine)"));
+#endif
   }
   _clock.Enable32kHzPin(false);
   _clock.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
@@ -74,7 +78,7 @@ void initRandom(void) {
 }
 
 void initButtons(void) {
-  pinMode(BRIGHTNESS_BUTTON, INPUT_PULLUP);
+  pinMode(BRIGHTNESS_BUTTON, INPUT_PULLDOWN_16);
   pinMode(MODE_BUTTON, INPUT_PULLUP);
   pinMode(PALETTE_BUTTON, INPUT_PULLUP);
 }
@@ -84,7 +88,7 @@ void initAP(void) {
   WiFi.softAP(AP_SSID, AP_PASSWORD);
   IPAddress myIP = WiFi.softAPIP();
 #if DEBUG
-  Serial.print("AP IP address: "); Serial.println(myIP);
+  Serial.print(F("AP IP address: ")); Serial.println(myIP);
 #endif
 }
 

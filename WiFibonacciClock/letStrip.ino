@@ -40,19 +40,19 @@ const uint8_t PROGMEM GAMMA_8[] = {
 
 void handleModes(void) {
   switch (_modeIndex) {
-    case 0:
+    case CLOCK_MODE:
       displayCurrentTime();
       break;
-    case 1:
+    case RAINBOW_CYCLE_MODE:
       rainbowCycle(_settings.rainbowDelay);
       break;
-    case 2:
+    case RAINBOW_MODE:
       rainbow(_settings.rainbowDelay);
       break;
-    case 3:
+    case PULSE_MODE:
       pulse(_settings.pulseColor, _settings.pulseDelay);
-    case 4:
-      flashlight();
+    case FLASH_LIGHT_MODE:
+      flashLight(_settings.flashLightColor);
       break;
   }
 }
@@ -76,28 +76,53 @@ void rainbow(uint8_t delayMs) {
   delay(delayMs);
 }
 
-void flashlight(void) {
-  for (int i=0; i<CLOCK_PIXELS; i++) setPixel(i, _settings.flashLightColor);
-  _ledStrip.show();
+void flashLight(uint32_t color) {
+  if (_refreshLedStrip) {
+    for (uint8_t i= 0; i < CLOCK_PIXELS; i++) setPixel(i, color);
+    _ledStrip.show();
+    _refreshLedStrip = false;
+  }
 }
 
-void pulse(uint32_t color, unsigned long delay) {
-  for(uint8_t i = 0; i < CLOCK_PIXELS; i++) setPixel(i, color);
+void pulse(uint32_t color, unsigned long delayMs) {
+  for (uint8_t i= 0; i < CLOCK_PIXELS; i++) setPixel(i, color);
   switchLedStripStatus();
-  fadeLedStrip(delay);
+  fadeLedStrip(delayMs);
 }
 
-void fadeLedStrip(unsigned long delay) {
+void loadFlashLightColor(char* hexColor) {
+  _settings.flashLightColor = getColorFromHex(hexColor);
+  _refreshLedStrip = true;
+}
+
+void loadPulseColor(char* hexColor) {
+  _settings.pulseColor = getColorFromHex(hexColor);
+  _refreshLedStrip = true;
+}
+
+uint32_t getColorFromHex(char* hex) {
+  return strtol(hex, NULL, 16);
+}
+
+void backupBrightness(void) {
+  _brightnessBackup = _ledStrip.getBrightness();
+}
+
+void restoreBrightness(void) {
+  _ledStrip.setBrightness(_brightnessBackup);
+}
+
+void fadeLedStrip(unsigned long delayMs) {
   if (_ledStripOn) {
-    fadeLedStripOff(delay);
+    fadeLedStripOff(delayMs);
   } else {
-    fadeLedStripOn(delay);
+    fadeLedStripOn(delayMs);
   }
 }
 
 void fadeLedStripOff(uint8_t delayMs) {
   _brightness = _brightness > FADING_STEP ? _brightness - FADING_STEP : 0;
-  uint8_t b = gammaCorrected(_brightness);
+  uint8_t b = gammaCorrect(_brightness);
   _ledStrip.setBrightness(b == 0 ? 1 : b);
   _ledStrip.show();
   delay(delayMs);
@@ -105,19 +130,24 @@ void fadeLedStripOff(uint8_t delayMs) {
 
 void fadeLedStripOn(uint8_t delayMs) {
   _brightness = _brightness < 255 - FADING_STEP ? _brightness + FADING_STEP : 255;
-  uint8_t b = gammaCorrected(_brightness);
+  uint8_t b = gammaCorrect(_brightness);
   _ledStrip.setBrightness(b == 0 ? 1 : b);
   _ledStrip.show();
   delay(delayMs);
 }
 
 void switchLedStripStatus(void) {
-  uint8_t b = _ledStrip.getBrightness();
-  if (b == 1) _ledStripOn = false;
-  if (b == 255) _ledStripOn = true;
+  switch (_ledStrip.getBrightness()) {
+    case 1:
+      _ledStripOn = false;
+      break;
+    case 255:
+      _ledStripOn = true;
+      break;
+  }
 }
 
-uint8_t gammaCorrected(uint8_t p) {
+uint8_t gammaCorrect(uint8_t p) {
   return pgm_read_byte(&GAMMA_8[p]);
 }
 

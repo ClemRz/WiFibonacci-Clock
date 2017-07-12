@@ -1,0 +1,15 @@
+<!DOCTYPE html><html><head><style>
+html, body {
+	font-family:Arial,sans-serif;
+	font-size: 14px;
+	background:#fff;
+	padding:3px;
+	color:#000;
+	margin:0;
+	}
+
+body {
+	width:100%;
+}
+
+</style><script>var c=new WebSocket('ws://192.168.4.1:81/',['arduino']);c.onopen=function(){},c.onerror=function(n){},c.onmessage=function(n){};</script></head><body>FlashLight color: <input type=\"color\" value=\"#ffffff\" oninput=\"c.send('f'+this.value)\"><br>Pulse color: <input type=\"color\" value=\"#ffb330\" oninput=\"c.send('p'+this.value)\"></body></html>

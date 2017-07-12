@@ -20,18 +20,19 @@
  */
 
 bool debounce(int pin) {
-  bool ret = false, reading = !digitalRead(pin);
+  bool ret = false, reading = digitalRead(pin);
+  reading = BRIGHTNESS_BUTTON ? reading : !reading;
   if (reading != _lastButtonState[pin]) _lastDebounceTime = millis();
 
   if ((millis() - _lastDebounceTime) > DEBOUNCE_DELAY_MS) {
     if (reading != _currentButtonState[pin]) {
       _currentButtonState[pin] = reading;
       ret = reading;
-      if (pin == BRIGHTNESS_BUTTON && !reading) switchLedStripStatus();
+      if (canChangeBrightness(pin) && !reading) switchLedStripStatus();
 #if DEBUG
       Serial.print(F("Button ")); Serial.print(pin); Serial.print(F(" changed to ")); Serial.println(reading); 
 #endif
-    } else if (pin == BRIGHTNESS_BUTTON && reading) {
+    } else if (canChangeBrightness(pin) && reading) {
       fadeLedStrip(FADING_DELAY_MS);
     }
   }
@@ -41,13 +42,15 @@ bool debounce(int pin) {
 }
 
 void handleButtons(void) {
-#if DEBUG
   if(debounce(BRIGHTNESS_BUTTON)) {
-    Serial.print(F("Toggle: ")); Serial.println(_ledStripOn);
-  } else
+#if DEBUG
+    Serial.print(F("Brightness: ")); Serial.println(_ledStripOn);
 #endif
+  } else
   if (debounce(MODE_BUTTON)) {
+    if (_modeIndex == PULSE_MODE) restoreBrightness();
     _modeIndex = (_modeIndex + 1) % MODES_SIZE;
+    if (_modeIndex == PULSE_MODE) backupBrightness();
     _refreshLedStrip = true;
 #if DEBUG
     Serial.print(F("Mode: ")); Serial.println(_modeIndex);
@@ -59,5 +62,9 @@ void handleButtons(void) {
     Serial.print(F("Palette: ")); Serial.println(_paletteIndex);
 #endif
   }
+}
+
+bool canChangeBrightness(int pin) {
+  return _modeIndex != PULSE_MODE && pin == BRIGHTNESS_BUTTON;
 }
 

@@ -57,8 +57,8 @@ using namespace ArduinoJson;
 #define SCL                       5               // I2C clock
 #define MODE_BUTTON               12
 #define PALETTE_BUTTON            13
-#define BRIGHTNESS_BUTTON         16
 #define LED_DATA                  14               // Pin connected to strip's data wire
+#define BRIGHTNESS_BUTTON         16
 
 // Serial
 #define DS3231_I2C_ADDRESS        0x68            // RTC I2C address
@@ -68,11 +68,16 @@ using namespace ArduinoJson;
 #define DEBOUNCE_DELAY_MS         10L
 
 // Clock
-#define MODES_SIZE                5
-#define LEDS_SIZE                 9               // Number of LEDs
-#define CLOCK_PIXELS              5               // Number of fisical cells
 #define FADING_DELAY_MS           8               // Delay between each steps
 #define FADING_STEP               1               // 214 steps total means a delay of 214/1*8 = 1,712ms to fade the complete range aprox.
+#define CLOCK_PIXELS              5               // Number of fisical cells
+#define LEDS_SIZE                 9               // Number of LEDs
+#define MODES_SIZE                5               // Number of modes
+#define CLOCK_MODE                0
+#define RAINBOW_CYCLE_MODE        1
+#define RAINBOW_MODE              2
+#define PULSE_MODE                3
+#define FLASH_LIGHT_MODE          4
 
 // File system configs
 #define PALETTES_PATH             "/palettes"
@@ -81,22 +86,24 @@ using namespace ArduinoJson;
 #define SETTINGS_TYPE             2
 
 // Defaults
-#define DEFAULT_PALETTE           "[[255,255,255],[255,10,10],[10,255,10],[10,10,255]]"
-#define DEFAULT_SETTINGS          "{\"flashlightColor\":[255,255,255],\"rainbowDelay\":20,\"pulse\":{\"color\":[255,179,48],\"delay\":20}}"
+#define DEFAULT_PALETTE           "[\"ffffff\",\"ff0a0a\",\"0aff0a\",\"0a0aff\"]"
+#define DEFAULT_SETTINGS          "{\"flashLightColor\":\"ffffff\",\"rainbowDelay\":20,\"pulse\":{\"color\":\"ffb330\",\"delay\":20}}"
 
 // Global variables
 Settings _settings;
 std::vector<Palette> _palettesV;
 unsigned long _lastDebounceTime = 0;
-uint8_t _brightness = 255;
+uint8_t
+  _brightnessBackup = 255,
+  _brightness = 255; //TODO check in settings
 int
-  _paletteIndex = 0,
-  _modeIndex = 0,
+  _paletteIndex = 0, //TODO check in settings
+  _modeIndex = 0, //TODO check in settings
   _j = 0;
 bool
   _lastButtonState[BUTTONS_SIZE],
   _currentButtonState[BUTTONS_SIZE],
-  _refreshLedStrip = false,
+  _refreshLedStrip = true,
   _ledStripOn = true;
 byte
   _bits[CLOCK_PIXELS],
