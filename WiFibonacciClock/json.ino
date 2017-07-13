@@ -74,6 +74,7 @@ void printSettingsJsonTo(char* buffer, size_t bufferSize) {
   pulse["delay"] = (long)_settings.pulseDelay;
   Generator::JsonObject<3> settings;
   decToHex(_settings.flashLightColor, buff2, sizeof(buff2));
+  settings["time"] = dateFormat("H:i:s", _clock.GetDateTime());
   settings["flashLightColor"] = buff2;
   settings["rainbowDelay"] = (long)_settings.rainbowDelay;
   settings["pulse"] = pulse;

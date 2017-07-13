@@ -52,6 +52,25 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
             loadPulseColor(c);
             break;
         }
+      } else {
+        switch (payload[0]) {
+          case 't':
+            char c[8];
+            std::copy(payload + 1, payload + 9, c);
+            loadTime(c);
+            break;
+          case 'd':
+          case 'e':
+            char c[3];
+            std::copy(payload + 1, payload + 4, c);
+            loadPulseDelay(c);
+            break;
+          case 'r':
+          case 's':
+            char c[3];
+            std::copy(payload + 1, payload + 4, c);
+            loadRainbowDelay(c);
+            break;
       }
       // send message to client
       // webSocket.sendTXT(num, "message here");
