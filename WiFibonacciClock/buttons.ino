@@ -21,7 +21,7 @@
 
 bool debounce(int pin) {
   bool ret = false, reading = digitalRead(pin);
-  reading = BRIGHTNESS_BUTTON ? reading : !reading;
+  reading = pin == BRIGHTNESS_BUTTON ? reading : !reading;
   if (reading != _lastButtonState[pin]) _lastDebounceTime = millis();
 
   if ((millis() - _lastDebounceTime) > DEBOUNCE_DELAY_MS) {

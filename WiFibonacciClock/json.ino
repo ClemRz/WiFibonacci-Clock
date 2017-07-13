@@ -35,7 +35,7 @@ bool loadPaletteJson(char* json) {
   Parser::JsonArray p = parser.parse(json);
   if (p.success()) {
     Palette palette;
-    for (uint8_t i = 0; i < 4; i++) palette.at[i] = getColorFromHex(p[i]);
+    for (uint8_t i = 0; i < 4; i++) palette.at[i] = hexToDec(p[i]);
     _palettesV.push_back(palette);
     return true;
 #if DEBUG
@@ -66,4 +66,20 @@ bool loadSettingsJson(char* json) {
   return false;
 }
 
+void printSettingsJsonTo(char* buffer, size_t bufferSize) {
+  char buff1[7], buff2[7];
+  Generator::JsonObject<2> pulse;
+  decToHex(_settings.pulseColor, buff1, sizeof(buff1));
+  pulse["color"] = buff1;
+  pulse["delay"] = (long)_settings.pulseDelay;
+  Generator::JsonObject<3> settings;
+  decToHex(_settings.flashLightColor, buff2, sizeof(buff2));
+  settings["flashLightColor"] = buff2;
+  settings["rainbowDelay"] = (long)_settings.rainbowDelay;
+  settings["pulse"] = pulse;
+  settings.printTo(buffer, bufferSize);
+#if DEBUG
+  settings.prettyPrintTo(Serial); Serial.println();
+#endif
+}
 

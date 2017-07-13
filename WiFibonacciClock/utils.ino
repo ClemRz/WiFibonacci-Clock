@@ -19,28 +19,12 @@
     Source code inspired from Fibonacci Clock https://github.com/pchretien/fibo
  */
 
-#ifndef _STRUCTURES_H
-#define _STRUCTURES_H
+uint32_t hexToDec(char* hex) {
+  return strtol(hex, NULL, 16);
+}
 
-typedef struct {
-  struct {
-    uint32_t flashLightColor;
-    unsigned long rainbowDelay;
-    uint32_t pulseColor;
-    unsigned long pulseDelay;
-  };
-} Settings;
-
-typedef struct {
-  union {
-    uint32_t at[4];
-    struct {
-      uint32_t off;
-      uint32_t hours;
-      uint32_t minutes;
-      uint32_t both;
-    };
-  };
-} Palette;
-
-#endif  //_STRUCTURES_H
+void decToHex(uint32_t dec, char* buffer, size_t bufferSize) {
+  String hexString = String(dec, HEX);
+  while (hexString.length() < bufferSize - 1) hexString = "0" + hexString;
+  hexString.toCharArray(buffer, bufferSize);
+}

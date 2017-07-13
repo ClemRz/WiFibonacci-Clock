@@ -28,12 +28,13 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       break;
     case WStype_CONNECTED:
       {
-        IPAddress ip = _webSocket.remoteIP(num);
 #if DEBUG
+        IPAddress ip = _webSocket.remoteIP(num);
         Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
-        // send message to client
-        //_webSocket.sendTXT(num, "Connected");
 #endif
+        char buffer[85];
+        printSettingsJsonTo(buffer, sizeof(buffer));
+        _webSocket.sendTXT(num, buffer);
       }
       break;
     case WStype_TEXT:

@@ -32,10 +32,10 @@ void MyWebSocketsServer::handleNonWebsocketConnection(WSclient_t * client) {
   client->tcp->write("HTTP/1.1 200 OK\r\n"
           "Server: arduino-WebSocket-Server\r\n"
           "Content-Type: text/html\r\n"
-          "Content-Length: 384\r\n"
+          "Content-Length: 720\r\n"
           "Connection: close\r\n"
           "\r\n"
-          "<!DOCTYPE html><html><head><script>var c=new WebSocket('ws://192.168.4.1:81/',['arduino']);c.onopen=function(){},c.onerror=function(n){},c.onmessage=function(n){};</script></head><body>FlashLight color: <input type=\"color\" value=\"#ffffff\" oninput=\"c.send('f'+this.value)\"><br>Pulse color: <input type=\"color\" value=\"#ffb330\" oninput=\"c.send('p'+this.value)\"></body></html>");
+          "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"initial-scale=1,maximum-scale=1,user-scalable=no\"><style>html,body{font-family:Arial,sans-serif;font-size: 14px;background:#fff;padding:3px;color:#000;margin:0;width:100%;}</style><script>var c=new WebSocket('ws://192.168.4.1:81/',['arduino']);c.onopen=function(){};c.onerror=function(e){};c.onmessage=function(e){var j=JSON.parse(e.data);document.getElementById('f').value='#'+j.flashLightColor;document.getElementById('p').value='#'+j.pulse.color;};</script></head><body>FlashLight color: <input id=\"f\" type=\"color\" oninput=\"c.send('f'+this.value)\"><br><br>Pulse color: <input id=\"p\" type=\"color\" oninput=\"c.send('p'+this.value)\"></body></html>");
 }
 
 MyWebSocketsServer::MyWebSocketsServer(uint16_t port) : WebSocketsServer(port) {}

@@ -91,17 +91,13 @@ void pulse(uint32_t color, unsigned long delayMs) {
 }
 
 void loadFlashLightColor(char* hexColor) {
-  _settings.flashLightColor = getColorFromHex(hexColor);
+  _settings.flashLightColor = hexToDec(hexColor);
   _refreshLedStrip = true;
 }
 
 void loadPulseColor(char* hexColor) {
-  _settings.pulseColor = getColorFromHex(hexColor);
+  _settings.pulseColor = hexToDec(hexColor);
   _refreshLedStrip = true;
-}
-
-uint32_t getColorFromHex(char* hex) {
-  return strtol(hex, NULL, 16);
 }
 
 void backupBrightness(void) {
