@@ -87,7 +87,10 @@ using namespace ArduinoJson;
 
 // Defaults
 #define DEFAULT_PALETTE           "[\"ffffff\",\"ff0a0a\",\"0aff0a\",\"0a0aff\"]"
-#define DEFAULT_SETTINGS          "{\"flashLightColor\":\"ffffff\",\"rainbowDelay\":20,\"pulse\":{\"color\":\"ffb330\",\"delay\":20}}"
+#define DEFAULT_SETTINGS          "{\"mode\":0,\"flashLightColor\":\"ffffff\",\"rainbowDelay\":20,\"pulse\":{\"color\":\"ffb330\",\"delay\":20}}"
+
+// HTML
+#define UI_HTTP_PAYLOAD           "HTTP/1.1 200 OK\r\nServer: esp8266\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE html><html><head><meta name=viewport content=\"initial-scale=1,maximum-scale=1,user-scalable=no\"><style>html,body{font-family:Arial;font-size:14px;background:#fff;padding:3px;color:#000;margin:0;width:100%;line-height:2em}</style></head><body><form> Mode: <select name=m onchange=\"z(this,'m')\"><option value=0>Clock</option><option value=1>Rainbow Cycle</option><option value=2>Rainbow</option><option value=3>Pulse</option><option value=4>Constant Light</option></select><br> Date and time: <input type=datetime-local name=t oninput=\"z(this,'t')\"><input type=button onclick=\"x(t)\" value=now><br> FlashLight color: <input name=f type=color oninput=\"z(this,'f')\"><br>Pulse color: <input name=p type=color oninput=\"z(this,'p')\"><br> Pulse delay (ms): <input name=d type=range min=1 max=100 oninput=\"y(this,e,'p')\"><input type=number name=e min=1 max=100 oninput=\"y(this,d,'p')\"><br> Rainbow delay (ms): <input name=r type=range min=1 max=100 oninput=\"y(this,s,'r')\"><input type=number name=s min=1 max=100 oninput=\"y(this,r,'r')\"></form></body><script>function v(a){return(a<100?\"0\":\"\")+a}function w(a){return(a<10?\"0\":\"\")+a}function x(j){var i=new Date(),h=w(i.getHours()),o=w(i.getMinutes()),n=w(i.getSeconds()),m=i.getFullYear(),l=i.getMonth(),k=w(i.getDate());j.value=m+\"-\"+w(l+1)+\"-\"+k+\"T\"+h+\":\"+o+\":\"+n;z({value:[\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"][l]+\" \"+k+\" \"+m+h+\":\"+o+\":\"+n},\"t\")}function y(e,d,f){d.value=e.value;z({value:v(w(e.value))},f)}function z(d,c){_c.send(c+d.value)}var _c=new WebSocket(\"ws://192.168.4.1:81/\",[\"arduino\"]);_c.onmessage=function(c){var a=JSON.parse(c.data),b=document.querySelector(\"form\");b.m.value=a.mode;b.t.value=a.dateTime;b.f.value=\"#\"+a.flashLightColor;b.p.value=\"#\"+a.pulse.color;b.d.value=a.pulse.delay;b.e.value=b.d.value;b.r.value=a.rainbowDelay;b.s.value=b.r.value};</script></html>"
 
 // Global variables
 Settings _settings;
@@ -98,7 +101,6 @@ uint8_t
   _brightness = 255; //TODO check in settings
 int
   _paletteIndex = 0, //TODO check in settings
-  _modeIndex = 0, //TODO check in settings
   _j = 0;
 bool
   _lastButtonState[BUTTONS_SIZE],
@@ -111,7 +113,7 @@ byte
   _minutes = 0;
 RtcDS3231<TwoWire> _clock(Wire);
 Adafruit_NeoPixel _ledStrip = Adafruit_NeoPixel(LEDS_SIZE, LED_DATA, NEO_RGB + NEO_KHZ800);
-MyWebSocketsServer _webSocket = MyWebSocketsServer(81);
+MyWebSocketsServer _webSocket = MyWebSocketsServer(81, UI_HTTP_PAYLOAD);
 
 void setup(void) {
 #if DEBUG

@@ -48,13 +48,7 @@ void handleButtons(void) {
 #endif
   } else
   if (debounce(MODE_BUTTON)) {
-    if (_modeIndex == PULSE_MODE) restoreBrightness();
-    _modeIndex = (_modeIndex + 1) % MODES_SIZE;
-    if (_modeIndex == PULSE_MODE) backupBrightness();
-    _refreshLedStrip = true;
-#if DEBUG
-    Serial.print(F("Mode: ")); Serial.println(_modeIndex);
-#endif
+    incrementMode();
   } else if (debounce(PALETTE_BUTTON)) {
     _paletteIndex = (_paletteIndex + 1) % _palettesV.size();
     _refreshLedStrip = true;
@@ -65,6 +59,6 @@ void handleButtons(void) {
 }
 
 bool canChangeBrightness(int pin) {
-  return _modeIndex != PULSE_MODE && pin == BRIGHTNESS_BUTTON;
+  return _settings.mode != PULSE_MODE && pin == BRIGHTNESS_BUTTON;
 }
 

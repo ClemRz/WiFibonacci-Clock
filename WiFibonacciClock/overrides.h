@@ -24,20 +24,18 @@
 
 class MyWebSocketsServer: public WebSocketsServer {
   public:
-    MyWebSocketsServer(uint16_t port);
+    MyWebSocketsServer(uint16_t port, const char* payload);
     virtual void handleNonWebsocketConnection(WSclient_t * client); 
+  protected:
+    const char* _payload;
 };
 
 void MyWebSocketsServer::handleNonWebsocketConnection(WSclient_t * client) {
-  client->tcp->write("HTTP/1.1 200 OK\r\n"
-          "Server: arduino-WebSocket-Server\r\n"
-          "Content-Type: text/html\r\n"
-          "Content-Length: 720\r\n"
-          "Connection: close\r\n"
-          "\r\n"
-          "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"initial-scale=1,maximum-scale=1,user-scalable=no\"><style>html,body{font-family:Arial,sans-serif;font-size: 14px;background:#fff;padding:3px;color:#000;margin:0;width:100%;}</style><script>var c=new WebSocket('ws://192.168.4.1:81/',['arduino']);c.onopen=function(){};c.onerror=function(e){};c.onmessage=function(e){var j=JSON.parse(e.data);document.getElementById('f').value='#'+j.flashLightColor;document.getElementById('p').value='#'+j.pulse.color;};</script></head><body>FlashLight color: <input id=\"f\" type=\"color\" oninput=\"c.send('f'+this.value)\"><br><br>Pulse color: <input id=\"p\" type=\"color\" oninput=\"c.send('p'+this.value)\"></body></html>");
+  client->tcp->write(_payload);
 }
 
-MyWebSocketsServer::MyWebSocketsServer(uint16_t port) : WebSocketsServer(port) {}
+MyWebSocketsServer::MyWebSocketsServer(uint16_t port, const char* payload) : WebSocketsServer(port) {
+  _payload = payload;
+}
 
 #endif  //_OVERRIDES_H

@@ -28,6 +28,7 @@ typedef struct {
     unsigned long rainbowDelay;
     uint32_t pulseColor;
     unsigned long pulseDelay;
+    int mode;
   };
 } Settings;
 

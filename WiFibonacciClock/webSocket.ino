@@ -32,7 +32,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         IPAddress ip = _webSocket.remoteIP(num);
         Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
 #endif
-        char buffer[85];
+        char buffer[127];
         printSettingsJsonTo(buffer, sizeof(buffer));
         _webSocket.sendTXT(num, buffer);
       }
@@ -54,23 +54,24 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         }
       } else {
         switch (payload[0]) {
-          case 't':
-            char c[8];
-            std::copy(payload + 1, payload + 9, c);
-            loadTime(c);
+          char c1[11], c2[8];
+          case 't': //tFeb 06 200901:04:05
+            std::copy(payload + 1, payload + 12, c1); //date: Feb 06 2009
+            std::copy(payload + 12, payload + 20, c2); //time: 01:04:05
+            loadDateTime(c1, c2);
             break;
-          case 'd':
-          case 'e':
-            char c[3];
-            std::copy(payload + 1, payload + 4, c);
-            loadPulseDelay(c);
+          case 'p':
+            std::copy(payload + 1, payload + 4, c1);
+            loadPulseDelay(atoi(c1));
             break;
           case 'r':
-          case 's':
-            char c[3];
-            std::copy(payload + 1, payload + 4, c);
-            loadRainbowDelay(c);
+            std::copy(payload + 1, payload + 4, c1);
+            loadRainbowDelay(atoi(c1));
             break;
+          case 'm':
+            std::copy(payload + 1, payload + 2, c1);
+            loadMode(atoi(c1));
+        }
       }
       // send message to client
       // webSocket.sendTXT(num, "message here");

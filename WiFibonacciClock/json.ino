@@ -50,13 +50,15 @@ bool loadSettingsJson(char* json) {
 #if DEBUG
   Serial.println(json);
 #endif
-  Parser::JsonParser<11> parser;
+  Parser::JsonParser<17> parser;
   Parser::JsonObject p = parser.parse(json);
   if (p.success()) {
     loadFlashLightColor(p["flashLightColor"]);
     loadPulseColor(p["pulse"]["color"]);
-    _settings.rainbowDelay = (long)p["rainbowDelay"];
-    _settings.pulseDelay = (long)p["pulse"]["delay"];
+    if (p.containsKey("date") && p.containsKey("time")) loadDateTime(p["date"], p["time"]);
+    loadRainbowDelay((long)p["rainbowDelay"]);
+    loadPulseDelay((long)p["pulse"]["delay"]);
+    loadMode(p["mode"]);
     return true;
 #if DEBUG
   } else {
@@ -72,11 +74,12 @@ void printSettingsJsonTo(char* buffer, size_t bufferSize) {
   decToHex(_settings.pulseColor, buff1, sizeof(buff1));
   pulse["color"] = buff1;
   pulse["delay"] = (long)_settings.pulseDelay;
-  Generator::JsonObject<3> settings;
+  Generator::JsonObject<5> settings;
   decToHex(_settings.flashLightColor, buff2, sizeof(buff2));
-  settings["time"] = dateFormat("H:i:s", _clock.GetDateTime());
+  settings["dateTime"] = dateFormat("Y-m-dTH:i:s", _clock.GetDateTime());
   settings["flashLightColor"] = buff2;
   settings["rainbowDelay"] = (long)_settings.rainbowDelay;
+  settings["mode"] = _settings.mode;
   settings["pulse"] = pulse;
   settings.printTo(buffer, bufferSize);
 #if DEBUG

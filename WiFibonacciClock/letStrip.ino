@@ -39,7 +39,7 @@ const uint8_t PROGMEM GAMMA_8[] = {
   215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255};
 
 void handleModes(void) {
-  switch (_modeIndex) {
+  switch (_settings.mode) {
     case CLOCK_MODE:
       displayCurrentTime();
       break;
@@ -88,6 +88,30 @@ void pulse(uint32_t color, unsigned long delayMs) {
   for (uint8_t i= 0; i < CLOCK_PIXELS; i++) setPixel(i, color);
   switchLedStripStatus();
   fadeLedStrip(delayMs);
+}
+
+void incrementMode(void) {
+  loadMode((_settings.mode + 1) % MODES_SIZE);
+}
+
+void loadMode(int index) {
+  if (_settings.mode != index) {
+    if (index == PULSE_MODE) backupBrightness();
+    if (_settings.mode == PULSE_MODE) restoreBrightness();
+  }
+  _settings.mode = index;
+  _refreshLedStrip = true;
+#if DEBUG
+  Serial.print(F("Mode: ")); Serial.println(_settings.mode);
+#endif
+}
+
+void loadPulseDelay(long delay) {
+  _settings.pulseDelay = delay;
+}
+
+void loadRainbowDelay(long delay) {
+  _settings.rainbowDelay = delay;
 }
 
 void loadFlashLightColor(char* hexColor) {
