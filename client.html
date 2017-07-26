@@ -1,1 +1,74 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"><style>html,body{font-family:Arial,sans-serif;font-size: 14px;background:#fff;padding:3px;color:#000;margin:0;width:100%;line-height:2em;}</style><script>function i(t){var a=new Date(),b=a.getHours(),c=a.getMinutes();t.value=(b<10?'0':'')+b+':'+(c<10?'0':'')+c;g(t,'t')}function g(a,b){console.log(b+a.value);c.send(b+a.value)}function h(a,b,c){b.value=a.value;g(a,c);}var c;function l(){c=new WebSocket('ws://192.168.4.1:81/',['arduino']);c.onmessage=function(e){var j=JSON.parse(e.data),f=document.querySelector('form');f.t.value=j.time;f.f.value='#'+j.flashLightColor;f.p.value='#'+j.pulse.color;f.d.value=j.pulse.delay;f.e.value=f.d.value;f.r.value=j.rainbowDelay;f.s.value=f.r.value;};}</script></head><body onload="l()"><form><input type="time" name="t" oninput="g(this,'t')"> <input type="button" onclick="i(t)" value="now"><br>FlashLight color: <input name="f" type="color" oninput="g(this,'f')"><br>Pulse color: <input name="p" type="color" oninput="g(this,'p')"><br>Pulse delay (ms): <input name="d" type="range" min="1" max="100" oninput="h(this,e,'p')"> <input type="number" name="e" min="1" max="100" oninput="h(this,d,'p')"><br>Rainbow delay (ms): <input name="r" type="range" min="1" max="100" oninput="h(this,s,'r')"> <input type="number" name="s" min="1" max="100" oninput="h(this,r,'r')"></form></body></html>
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+		<style>
+			html, body {
+				font-family: Arial;
+				font-size: 14px;
+				background: #fff;
+				padding: 3px;
+				color: #000;
+				margin: 0;
+				width: 100%;
+				line-height: 2em;
+			}
+		</style>
+	</head>
+	<body>
+		<form>
+			Mode:
+			<select name="m" onchange="z(this,'m')">
+				<option value="0">Clock</option>
+				<option value="1">Rainbow Cycle</option>
+				<option value="2">Rainbow</option>
+				<option value="3">Pulse</option>
+				<option value="4">Constant Light</option>
+			</select><br>
+			Date and time: <input type="datetime-local" name="t" oninput="z(this,'t')"> <input type="button" onclick="x(t)" value="now"><br>
+			FlashLight color: <input name="f" type="color" oninput="z(this,'f')"><br>Pulse color: <input name="p" type="color" oninput="z(this,'p')"><br>
+			Pulse delay (ms): <input name="d" type="range" min="1" max="100" oninput="y(this,e,'p')"> <input type="number" name="e" min="1" max="100" oninput="y(this,d,'p')"><br>
+			Rainbow delay (ms): <input name="r" type="range" min="1" max="100" oninput="y(this,s,'r')"> <input type="number" name="s" min="1" max="100" oninput="y(this,r,'r')">
+		</form>
+	</body>
+	<script>
+		function v(i) {
+			return (i < 100 ? '0' : '') + i;
+		}
+		function w(i) {
+			return (i < 10 ? '0' : '') + i;
+		}
+		function x(t) {
+			var a = new Date(),
+				b = w(a.getHours()),
+				c = w(a.getMinutes()),
+				d = w(a.getSeconds()),
+				e = a.getFullYear(),
+				f = a.getMonth(),
+				g = w(a.getDate());
+			t.value = e + '-' + w(f + 1) + '-' + g + 'T' + b + ':' + c + ':' + d; //2009-02-06T01:04:05
+			z({value: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][f] + ' ' + g + ' ' + e + b + ':' + c + ':' + d}, 't'); //Feb 06 200901:04:05
+		}
+		function y(a, b, c) {
+			b.value = a.value;
+			z({value: v(w(a.value))}, c);
+		}
+		function z(a, b) {
+			console.log(b + a.value);
+			_c.send(b + a.value);
+		}
+		var _c = new WebSocket('ws://192.168.4.1:81/', ['arduino']);
+		_c.onmessage = function (e) {
+			var j = JSON.parse(e.data),
+				f = document.querySelector('form');
+			f.m.value = j.mode;
+			f.t.value = j.dateTime;
+			f.f.value = '#' + j.flashLightColor;
+			f.p.value = '#' + j.pulse.color;
+			f.d.value = j.pulse.delay;
+			f.e.value = f.d.value;
+			f.r.value = j.rainbowDelay;
+			f.s.value = f.r.value;
+		};
+	</script>
+</html>

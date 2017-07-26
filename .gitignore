@@ -4,3 +4,5 @@
 *.bak
 *.nc
 *.dxf
+node_modules/
+client.min.html
