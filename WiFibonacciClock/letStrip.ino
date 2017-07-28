@@ -90,11 +90,8 @@ void pulse(uint32_t color, unsigned long delayMs) {
   fadeLedStrip(delayMs);
 }
 
-void incrementMode(void) {
-  loadMode((_settings.mode + 1) % MODES_SIZE);
-}
-
-void loadMode(int index) {
+void loadMode(uint8_t index) {
+  index = index % MODES_SIZE;
   if (_settings.mode != index) {
     if (index == PULSE_MODE) backupBrightness();
     if (_settings.mode == PULSE_MODE) restoreBrightness();
@@ -103,6 +100,15 @@ void loadMode(int index) {
   _refreshLedStrip = true;
 #if DEBUG
   Serial.print(F("Mode: ")); Serial.println(_settings.mode);
+#endif
+}
+
+void loadPalette(uint8_t index) {
+    index = index % _palettesV.size();
+    _settings.palette = index;
+    _refreshLedStrip = true;
+#if DEBUG
+    Serial.print(F("Palette: ")); Serial.println(_settings.palette);
 #endif
 }
 
@@ -124,6 +130,12 @@ void loadPulseColor(char* hexColor) {
   _refreshLedStrip = true;
 }
 
+void loadBrightness(uint8_t brightness) {
+  _settings.brightness = brightness;
+  if (_settings.mode == PULSE_MODE) return;
+  applyCorrectedBrightness();
+}
+
 void backupBrightness(void) {
   _brightnessBackup = _ledStrip.getBrightness();
 }
@@ -141,19 +153,21 @@ void fadeLedStrip(unsigned long delayMs) {
 }
 
 void fadeLedStripOff(uint8_t delayMs) {
-  _brightness = _brightness > FADING_STEP ? _brightness - FADING_STEP : 0;
-  uint8_t b = gammaCorrect(_brightness);
-  _ledStrip.setBrightness(b == 0 ? 1 : b);
-  _ledStrip.show();
+  _settings.brightness = _settings.brightness > FADING_STEP ? _settings.brightness - FADING_STEP : 0;
+  applyCorrectedBrightness();
   delay(delayMs);
 }
 
 void fadeLedStripOn(uint8_t delayMs) {
-  _brightness = _brightness < 255 - FADING_STEP ? _brightness + FADING_STEP : 255;
-  uint8_t b = gammaCorrect(_brightness);
+  _settings.brightness = _settings.brightness < 255 - FADING_STEP ? _settings.brightness + FADING_STEP : 255;
+  applyCorrectedBrightness();
+  delay(delayMs);
+}
+
+void applyCorrectedBrightness(void) {
+  uint8_t b = gammaCorrect(_settings.brightness);
   _ledStrip.setBrightness(b == 0 ? 1 : b);
   _ledStrip.show();
-  delay(delayMs);
 }
 
 void switchLedStripStatus(void) {
@@ -198,7 +212,7 @@ void setTime(byte hours, byte minutes) {
     setBits(minutes/5, 0x02);
     
     for (int i=0; i<CLOCK_PIXELS; i++) {
-      setPixel(i, _palettesV.at(_paletteIndex).at[_bits[i]]);
+      setPixel(i, _palettesV.at(_settings.palette).at[_bits[i]]);
     }
     _ledStrip.show();
   }

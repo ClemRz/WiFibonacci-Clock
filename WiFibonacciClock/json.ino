@@ -20,14 +20,14 @@
  */
 
 void loadDefaultPalette(void) {
-  loadPaletteJson(DEFAULT_PALETTE);
+  loadPaletteJson(DEFAULT_PALETTE, "RGB");
 }
 
 void loadDefaultSettings(void) {
-  loadSettingsJson(DEFAULT_SETTINGS);
+  loadSettingsJson(DEFAULT_SETTINGS, "");
 }
  
-bool loadPaletteJson(char* json) {
+bool loadPaletteJson(char* json, String name) {
 #if DEBUG
   Serial.println(json);
 #endif
@@ -36,6 +36,7 @@ bool loadPaletteJson(char* json) {
   if (p.success()) {
     Palette palette;
     for (uint8_t i = 0; i < 4; i++) palette.at[i] = hexToDec(p[i]);
+    palette.name = name;
     _palettesV.push_back(palette);
     return true;
 #if DEBUG
@@ -46,19 +47,21 @@ bool loadPaletteJson(char* json) {
   return false;
 }
 
-bool loadSettingsJson(char* json) {
+bool loadSettingsJson(char* json, String unused) {
 #if DEBUG
   Serial.println(json);
 #endif
-  Parser::JsonParser<17> parser;
+  Parser::JsonParser<21> parser;
   Parser::JsonObject p = parser.parse(json);
   if (p.success()) {
     loadFlashLightColor(p["flashLightColor"]);
     loadPulseColor(p["pulse"]["color"]);
     if (p.containsKey("date") && p.containsKey("time")) loadDateTime(p["date"], p["time"]);
-    loadRainbowDelay((long)p["rainbowDelay"]);
-    loadPulseDelay((long)p["pulse"]["delay"]);
-    loadMode(p["mode"]);
+    loadRainbowDelay(atoi(p["rainbowDelay"]));
+    loadPulseDelay(atoi(p["pulse"]["delay"]));
+    loadBrightness(atoi(p["brightness"]));
+    loadMode(atoi(p["mode"]));
+    loadPalette(atoi(p["palette"]));
     return true;
 #if DEBUG
   } else {
@@ -74,16 +77,32 @@ void printSettingsJsonTo(char* buffer, size_t bufferSize) {
   decToHex(_settings.pulseColor, buff1, sizeof(buff1));
   pulse["color"] = buff1;
   pulse["delay"] = (long)_settings.pulseDelay;
-  Generator::JsonObject<5> settings;
+  Generator::JsonObject<7> settings;
   decToHex(_settings.flashLightColor, buff2, sizeof(buff2));
   settings["dateTime"] = dateFormat("Y-m-dTH:i:s", _clock.GetDateTime());
   settings["flashLightColor"] = buff2;
   settings["rainbowDelay"] = (long)_settings.rainbowDelay;
   settings["mode"] = _settings.mode;
+  settings["brightness"] = _settings.brightness;
+  settings["palette"] = _settings.palette;
   settings["pulse"] = pulse;
   settings.printTo(buffer, bufferSize);
 #if DEBUG
   settings.prettyPrintTo(Serial); Serial.println();
+#endif
+}
+
+void printPaletteJsonTo(Palette palette, char* buffer, size_t bufferSize) {
+  char buff[4][7];
+  Generator::JsonArray<5> arr;
+  for(uint8_t i = 0; i < 4; i++) {
+    decToHex(palette.at[i], buff[i], sizeof(buff[i]));
+    arr.add(buff[i]);
+  }
+  arr.add(palette.name);
+  arr.printTo(buffer, bufferSize);
+#if DEBUG
+  arr.prettyPrintTo(Serial); Serial.println();
 #endif
 }
 

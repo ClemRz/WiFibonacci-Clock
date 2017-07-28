@@ -21,7 +21,7 @@
 
 bool debounce(int pin) {
   bool ret = false, reading = digitalRead(pin);
-  reading = pin == BRIGHTNESS_BUTTON ? reading : !reading;
+  reading = !reading;
   if (reading != _lastButtonState[pin]) _lastDebounceTime = millis();
 
   if ((millis() - _lastDebounceTime) > DEBOUNCE_DELAY_MS) {
@@ -48,13 +48,7 @@ void handleButtons(void) {
 #endif
   } else
   if (debounce(MODE_BUTTON)) {
-    incrementMode();
-  } else if (debounce(PALETTE_BUTTON)) {
-    _paletteIndex = (_paletteIndex + 1) % _palettesV.size();
-    _refreshLedStrip = true;
-#if DEBUG
-    Serial.print(F("Palette: ")); Serial.println(_paletteIndex);
-#endif
+    loadMode(_settings.mode + 1);
   }
 }
 

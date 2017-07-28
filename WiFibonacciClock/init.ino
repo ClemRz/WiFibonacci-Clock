@@ -78,9 +78,8 @@ void initRandom(void) {
 }
 
 void initButtons(void) {
-  pinMode(BRIGHTNESS_BUTTON, INPUT_PULLDOWN_16);
+  pinMode(BRIGHTNESS_BUTTON, INPUT_PULLUP);
   pinMode(MODE_BUTTON, INPUT_PULLUP);
-  pinMode(PALETTE_BUTTON, INPUT_PULLUP);
 }
 
 void initAP(void) {

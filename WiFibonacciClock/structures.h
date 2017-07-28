@@ -28,7 +28,9 @@ typedef struct {
     unsigned long rainbowDelay;
     uint32_t pulseColor;
     unsigned long pulseDelay;
-    int mode;
+    uint8_t mode;
+    uint8_t brightness;
+    uint8_t palette;
   };
 } Settings;
 
@@ -42,6 +44,7 @@ typedef struct {
       uint32_t both;
     };
   };
+  String name;
 } Palette;
 
 #endif  //_STRUCTURES_H

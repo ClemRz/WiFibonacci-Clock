@@ -24,21 +24,17 @@ bool readPalettes(void) {
   Dir dir = SPIFFS.openDir(PALETTES_PATH);
   while(dir.next()){
     File palette = dir.openFile("r");
-    success = success || readFile(palette, PALETTE_TYPE);
+    success = success || readFile(palette, loadPaletteJson);
     palette.close();
     yield();
   }
   return success;
 }
 
-void writePalettes(void) {
-  
-}
-
 bool readSettings(void) {
   bool success = false;
   File settings = SPIFFS.open(SETTINGS_FILE_PATH, "r");
-  success = success || readFile(settings, SETTINGS_TYPE);
+  success = success || readFile(settings, loadSettingsJson);
   settings.close();
   return success;
 }
@@ -47,26 +43,43 @@ void writeSettings(void) {
   
 }
 
-bool readFile(File file, uint8_t type) {
-  bool success = false;
-  if (file) {
-    String file_path = (String)PALETTES_PATH + file.name();
+bool writePalette(String name, char* json) {
+  return writeTxtFile(PALETTES_PATH + '/' + name, json);
+}
+
+void writeBinFile(String name, uint8_t * bin, size_t length) {
 #if DEBUG
-    Serial.print(F("Reading ")); Serial.println(file_path);
+  Serial.println(F("Not implemented"));
+#endif
+}
+
+bool writeTxtFile(String path, char* content) {
+  File file = SPIFFS.open(path, "w");
+  if (file) {
+    file.print(content);
+    file.close();
+    return true;
+#if DEBUG
+  } else {
+    Serial.println(F("file open failed"));
+#endif  //DEBUG
+  }
+  return false;
+}
+
+bool readFile(File file, std::function<bool (char* json, String name)> callback) {
+  if (file) {
+    String name = file.name(),
+           path = (String)PALETTES_PATH + name;
+#if DEBUG
+    Serial.print(F("Reading ")); Serial.println(path);
 #endif
     size_t size = file.size();
     if (size <= 1024) {
       std::unique_ptr<char[]> buf(new char[size]);
       file.readBytes(buf.get(), size);
       file.close();
-      switch (type) {
-        case PALETTE_TYPE:
-          success = loadPaletteJson(buf.get());
-          break;
-        case SETTINGS_TYPE:
-          success = loadSettingsJson(buf.get());
-          break;
-      }
+      return callback(buf.get(), getBaseName(name));
 #if DEBUG
     } else {
       Serial.println(F("file size is too large"));
@@ -77,6 +90,10 @@ bool readFile(File file, uint8_t type) {
     Serial.println(F("file open failed"));
 #endif
   }
-  return success;
+  return false;
+}
+
+String getBaseName(String fileName) {
+  return fileName.substring(0, fileName.lastIndexOf('.'));
 }
 
