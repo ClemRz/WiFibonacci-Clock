@@ -2,13 +2,13 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         regex_extract: {
-            style: {
+            script: {
                 options: {
-                    regex: '<!-- extract:style\.html -->((:?.|\n)*?)<!-- endextract -->',
+                    regex: '/\\* extract:script\.js \\*/((:?.|\n)*?)/\\* endextract \\*/',
                     includePath : false
                 },
                 files: {
-                    './generated/style.html': ['client.html']
+                    './generated/script.js': ['client.html']
                 }
             },
             body: {
@@ -19,22 +19,34 @@ module.exports = function(grunt) {
                 files: {
                     './generated/body.html': ['client.html']
                 }
+            },
+            style: {
+                options: {
+                    regex: '<!-- extract:style\.html -->((:?.|\n)*?)<!-- endextract -->',
+                    includePath : false
+                },
+                files: {
+                    './generated/style.html': ['client.html']
+                }
             }
         },
         replace: {
             before: {
                 src: 'client.html',
-                dest: './generated/client.min.html',
+                dest: './generated/payload.html',
                 replacements: [{
                     from: /<!--\s*extract:(.|\n)*?endextract\s?-->/g,
+                    to: ''
+                }, {
+                    from: /\/\* extract:script\.js \*\/(.|\n)*?\/\* endextract \*\//g,
                     to: ''
                 }]
             },
             after: {
-                src: './generated/*.html',
+                src: './generated/*',
                 dest: './generated/',
                 replacements: [{
-                    from: /console\.[a-z]+\([^\)]*\);?/g,
+                    from: /console\.[a-z]+\([^\)]*\)(;|,)?/g,
                     to: ''
                 }, {
                     from: /;[\s\r\n]*\}/g,
@@ -48,11 +60,11 @@ module.exports = function(grunt) {
         htmlcompressor: {
             default: {
                 files: [{
-                    './generated/client.min.html': './generated/client.min.html'
-                }, {
-                    './generated/style.html': './generated/style.html'
+                    './generated/payload.html': './generated/payload.html'
                 }, {
                     './generated/body.html': './generated/body.html'
+                }, {
+                    './generated/style.html': './generated/style.html'
                 }],
                 options: {
                     'compress-js': true,
@@ -65,12 +77,19 @@ module.exports = function(grunt) {
                 }
             }
         },
+        uglify: {
+            default: {
+                files: {
+                    './generated/script.js': './generated/script.js'
+                }
+            }
+        },
         file_append: {
             default: {
                 files: [{
                     prepend: 'HTTP/1.1 200 OK\\r\\nServer: esp8266\\r\\nContent-Type: text/html\\r\\n\\r\\n',
-                    input: './generated/client.min.html',
-                    output: './generated/client.min.html'
+                    input: './generated/payload.html',
+                    output: './generated/payload.html'
                 }]
             }
         }
@@ -80,7 +99,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-file-append');
     grunt.loadNpmTasks('grunt-regex-extract');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
 
-    grunt.registerTask('default', ['regex_extract', 'replace:before', 'htmlcompressor', 'replace:after', 'file_append']);
+    grunt.registerTask('default', ['regex_extract', 'replace:before', 'htmlcompressor', 'uglify', 'replace:after', 'file_append']);
 
 };

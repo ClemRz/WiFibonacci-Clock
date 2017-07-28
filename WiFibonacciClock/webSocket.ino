@@ -20,13 +20,13 @@
  */
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
-      // How to:
-      // send message to client:
-      // webSocket.sendTXT(num, "message here");
-      // send data to all connected clients:
-      // webSocket.broadcastTXT("message here");
-      // send message to client:
-      // webSocket.sendBIN(num, payload, lenght);
+  // How to:
+  // send message to client:
+  // webSocket.sendTXT(num, "message here");
+  // send data to all connected clients:
+  // webSocket.broadcastTXT("message here");
+  // send message to client:
+  // webSocket.sendBIN(num, payload, lenght);
   switch(type) {
     case WStype_DISCONNECTED:
 #if DEBUG
@@ -62,7 +62,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       } else {
         switch (payload[0]) {
           case 'a': //amondrian.json
-            std::copy(payload + 1, payload + 9, c2); //TODO check what is the maximum length for the file name
+            std::copy(payload + 1, payload + 40, c2); //TODO check what is the maximum length for the file name
             setNextFileName(c2);
           case 'b': //b001
             std::copy(payload + 1, payload + 4, c1);
@@ -70,7 +70,12 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
             break;
           case 'c': //c["#ffffff","#ff0a0a","#f8de00","#0a0aff"]
             std::copy(payload + 1, payload + 42, c2);
+            c2[41] = (char)0;
             processPalette(num, c2);
+            break;
+          case 'd': //d01
+            std::copy(payload + 1, payload + 3, c1);
+            deletePalette(atoi(c1));
             break;
           case 'l': //l01
             std::copy(payload + 1, payload + 3, c1);
@@ -115,6 +120,7 @@ void setNextFileName(const char* name) {
 }
 
 void sendContent(uint8_t num) {
+  _webSocket.sendTXT(num, UI_JS_SCRIPT);
   _webSocket.sendTXT(num, UI_HTML_BODY);
   _webSocket.sendTXT(num, UI_HTML_STYLE);
 }
@@ -134,11 +140,10 @@ void sendSettings(uint8_t num) {
 }
 
 void processPalette(uint8_t num, char* palette) {
-  if (writePalette(_receivedFileName, palette)) {
-    if (loadPaletteJson(palette, getBaseName(_receivedFileName))) { //TODO duplicated names will appear several times, should we do a unicity check?
-      _webSocket.sendTXT(num, "o");
-      sendPalettes(num);
-    }
+  if (writePalette(_receivedFileName, palette) && loadPaletteJson(palette, getBaseName(_receivedFileName))) {
+    _webSocket.sendTXT(num, "o");
+  } else {
+    _webSocket.sendTXT(num, "e");
   }
 }
 

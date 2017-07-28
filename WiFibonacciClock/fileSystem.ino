@@ -33,8 +33,11 @@ bool readPalettes(void) {
 
 bool readSettings(void) {
   bool success = false;
+#if DEBUG
+    Serial.print(F("Opening: "));Serial.println(SETTINGS_FILE_PATH);
+#endif
   File settings = SPIFFS.open(SETTINGS_FILE_PATH, "r");
-  success = success || readFile(settings, loadSettingsJson);
+  success = readFile(settings, loadSettingsJson);
   settings.close();
   return success;
 }
@@ -44,7 +47,11 @@ void writeSettings(void) {
 }
 
 bool writePalette(String name, char* json) {
-  return writeTxtFile(PALETTES_PATH + '/' + name, json);
+  return writeTxtFile((String)PALETTES_PATH + '/' + name, json);
+}
+
+void deletePalette(uint8_t index) {
+  deleteFile((String)PALETTES_PATH + '/' + _palettesV.at(index).name + ".json");
 }
 
 void writeBinFile(String name, uint8_t * bin, size_t length) {
@@ -56,12 +63,15 @@ void writeBinFile(String name, uint8_t * bin, size_t length) {
 bool writeTxtFile(String path, char* content) {
   File file = SPIFFS.open(path, "w");
   if (file) {
+#if DEBUG
+    Serial.print(F("Writing content: "));Serial.println(content);
+#endif  //DEBUG
     file.print(content);
     file.close();
     return true;
 #if DEBUG
   } else {
-    Serial.println(F("file open failed"));
+    Serial.print(F("file open failed: "));Serial.println(path);
 #endif  //DEBUG
   }
   return false;
@@ -69,10 +79,9 @@ bool writeTxtFile(String path, char* content) {
 
 bool readFile(File file, std::function<bool (char* json, String name)> callback) {
   if (file) {
-    String name = file.name(),
-           path = (String)PALETTES_PATH + name;
+    String name = file.name();
 #if DEBUG
-    Serial.print(F("Reading ")); Serial.println(path);
+    Serial.print(F("Reading ")); Serial.println(name);
 #endif
     size_t size = file.size();
     if (size <= 1024) {
@@ -93,7 +102,19 @@ bool readFile(File file, std::function<bool (char* json, String name)> callback)
   return false;
 }
 
+bool deleteFile(String path) {
+  if (SPIFFS.remove(path)) {
+    return true;
+#if DEBUG
+    Serial.print(path); Serial.println(F(" deleted"));
+  } else {
+    Serial.print(F("file delete failed: "));Serial.println(path);
+#endif  //DEBUG
+  }
+  return false;
+}
+
 String getBaseName(String fileName) {
-  return fileName.substring(0, fileName.lastIndexOf('.'));
+  return fileName.substring(fileName.lastIndexOf('/') + 1, fileName.lastIndexOf('.'));
 }
 

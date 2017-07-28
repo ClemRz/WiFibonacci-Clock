@@ -16,7 +16,7 @@
 				box-sizing: border-box;
 			}
 			section {
-				width: 393px;
+				width: 350px;
 				margin: 0 auto;
 			}
 			fieldset>legend {
@@ -47,6 +47,9 @@
 				color: #888;
 				font-size: 0.75rem;
 			}
+			#l a {
+				margin-left:5px;
+			}
 		</style>
 		<!-- endextract -->
 	</head>
@@ -68,7 +71,8 @@
 				</fieldset>
 				<fieldset>
 					<legend>Clock</legend>
-					Date and time: <input type="datetime-local" name="t" oninput="z(this,'t')"> <input type="button" onclick="x(t)" value="now"><br>
+					Date and time:<br>
+					<input type="datetime-local" name="t" oninput="z(this,'t')"> <input type="button" onclick="x(t)" value="now"><br>
 					Palettes:<br>
 					<div class="h"><span>off</span><span>hours</span><span>minutes</span><span>both</span></div>
 					<div id="l"></div>
@@ -94,111 +98,143 @@
 			&copy; 2017 Clément Ronzon
 		</footer>
 		<!-- endextract -->
-	</body>
-	<script>
-		function p() {
-			alert('Failure');
-		}
-		function q(a) {
-			var f = a.files[0],
-				b = new FileReader();
-			b.onerror = p;
-			b.onload = function(e) {
-				_e = 1;
-				zz(f.name, 'a');
-				zz(e.target.result, 'c');
+		<script>
+			/* extract:script.js */
+			// Keep in mind that anything defined inside this extracted section will live in the scope of _w.onmessage function. Remember to publish whatever needs to be published.
+			window.m = function(i) {
+				_f.l[i].checked = 1;
+			};
+			window.n = function(a) {
+				var li = a.parentNode,
+					i = 0;
+				while (li.previousElementSibling) {
+					li = li.previousElementSibling;
+					i ++;
+				}
+				return w(i);
+			};
+			window.o = function(arr) {
+				var rand = Math.random(),
+					html = '<div><input type="radio" name="l" id="l' + rand + '" onclick="zl(this)"><label for="l' + rand + '">';
+				for (var i = 0; i < 4; i++) html += '<span style="background-color:#' + arr[i] + '"></span>';
+				html += arr[4] + '</label>';
+				if (_f.l) html += '<a href="#" onclick="zd(this)">X</a>';
+				html += '</div>';
+				t(s('#l'), html);
+				if (!_f.l.value) m(0);
+			};
+			window.p = function() {
+				alert('Failure');
+			};
+			window.q = function(input) {
+				var file = input.files[0],
+					fr = new FileReader();
+				fr.onerror = p;
+				fr.onload = function(e) {
+					_c = e.target.result;
+					_a = file.name;
+					zz(_a, 'a');
+					zz(_c, 'c');
+				};
+				fr.readAsText(file);
+			};
+			window.u = function(input) {
+				var val = input.value * 1;
+				return val === '' || input.min && val < input.min * 1 || input.max && val > input.max * 1;
+			};
+			window.v = function(val) {
+				return (val < 100 ? '0' : '') + val;
+			};
+			window.w = function(val) {
+				return (val < 10 ? '0' : '') + val;
+			};
+			window.x = function(input) {
+				var date = new Date(),
+					hours = w(date.getHours()),
+					minutes = w(date.getMinutes()),
+					seconds = w(date.getSeconds()),
+					year = date.getFullYear(),
+					month = date.getMonth(),
+					day = w(date.getDate());
+				input.value = year + '-' + w(month + 1) + '-' + day + 'T' + hours + ':' + minutes + ':' + seconds; //2009-02-06T01:04:05
+				zz(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month] + ' ' + day + ' ' + year + hours + ':' + minutes + ':' + seconds, 't'); //Feb 06 200901:04:05
+			};
+			window.y = function(input1, input2, code) {
+				if (u(input1)) return;
+				var val = input1.value;
+				input2.value = val;
+				zz(v(w(val)), code);
+			};
+			window.z = function(input, code) {
+				if (u(input)) return;
+				var val = input.value;
+				console.log(code + val);
+				_w.send(code + val);
+			};
+			window.zz = function(val, code) {
+				z({value: val}, code);
+			};
+			window.zl = function(input) {
+				zz(n(input), 'l');
+			};
+			window.zd = function(a) {
+				zz(n(a), 'd');
+				a.parentNode.remove();
+				if (!_f.l.value) _f.l[0].click();
+			};
+			window.zm = function(input) {
+				z(input, 'm');
+			};
+			/* endextract */
+			function s(selector) {
+				return document.querySelector(selector);
 			}
-			b.readAsText(f);
-		}
-		function s(a) {
-			return document.querySelector(a);
-		}
-		function t(e, s) {
-			var d = document.createElement('div');
-			d.innerHTML = s;
-			while (d.children.length > 0) e.appendChild(d.children[0]);
-		}
-		function u(a) {
-			var i = a.value * 1;
-			return i === "" || a.min && i < a.min * 1 || a.max && i > a.max * 1;
-		}
-		function v(i) {
-			return (i < 100 ? '0' : '') + i;
-		}
-		function w(i) {
-			return (i < 10 ? '0' : '') + i;
-		}
-		function x(t) {
-			var a = new Date(),
-				b = w(a.getHours()),
-				c = w(a.getMinutes()),
-				d = w(a.getSeconds()),
-				e = a.getFullYear(),
-				f = a.getMonth(),
-				g = w(a.getDate());
-			t.value = e + '-' + w(f + 1) + '-' + g + 'T' + b + ':' + c + ':' + d; //2009-02-06T01:04:05
-			zz(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][f] + ' ' + g + ' ' + e + b + ':' + c + ':' + d, 't'); //Feb 06 200901:04:05
-		}
-		function y(a, b, c) {
-			if (u(a)) return;
-			var d = a.value;
-			b.value = d;
-			zz(v(w(d)), c);
-		}
-		function z(a, b) {
-			if (u(a)) return;
-			var c = a.value;
-			console.log(b + c);
-			_c.send(b + c);
-		}
-		function zz(a, b) {
-			z({value: a}, b);
-		}
-		function zl(a) {
-			zz(w(a.value), 'l');
-		}
-		function zm(a) {
-			z(a, 'm');
-		}
-		var _c = new WebSocket('ws://192.168.4.1:81/', ['arduino']),
-			_e,
-			_i = 0;
-		_c.onmessage = function (e) {
-			var d = e.data;
-			if (_e) {
-				if (d == 'o') {
-					s('#l').innerHTML = '';
+			function t(container, html) {
+				var d = document.createElement('div');
+				d.innerHTML = html;
+				while (d.children.length > 0) container.appendChild(d.children[0]);
+			}
+			var _a, _c, _f,
+				_w = new WebSocket('ws://192.168.4.1:81/', ['arduino']);
+			_w.onmessage = function (e) {
+				var data = e.data;
+				if (_c) {
+					if (data == 'o') {
+						_c = JSON.parse(_c.replace(/#/g,''));
+						_c.push(_a.split('.')[0]);
+						o(_c);
+						_f.i.value = '';
+					} else {
+						p();
+					}
+					_c = 0;
+				}
+				if (data[0] == '{' || data[0] == '[') {
+					var json = JSON.parse(data);
+					if (typeof json.mode != 'undefined') {
+						_f.m.value = json.mode;
+						_f.b.value = json.brightness;
+						_f.c.value = _f.b.value;
+						_f.t.value = json.dateTime;
+						_f.f.value = '#' + json.flashLightColor;
+						_f.p.value = '#' + json.pulse.color;
+						_f.d.value = json.pulse.delay;
+						_f.e.value = _f.d.value;
+						_f.r.value = json.rainbowDelay;
+						_f.s.value = _f.r.value;
+						m(json.palette);
+					} else { //["ffffff", "ffffff", "ffffff", "ffffff"]
+						o(json);
+					}
 				} else {
-					p();
+					if (data[0] == '<') {
+						t(s(data.indexOf('<style>') == 0 ? 'head' : 'body'), data);
+						_f = s('form');
+					} else {
+						eval(data);
+					}
 				}
-				_e = 0;
-			}
-			if (d[0] == '{' || d[0] == '[') {
-				var j = JSON.parse(d),
-					f = s('form');
-				if (typeof j.mode != 'undefined') {
-					f.m.value = j.mode;
-					f.b.value = j.brightness;
-					f.c.value = f.b.value
-					f.t.value = j.dateTime;
-					f.f.value = '#' + j.flashLightColor;
-					f.p.value = '#' + j.pulse.color;
-					f.d.value = j.pulse.delay;
-					f.e.value = f.d.value;
-					f.r.value = j.rainbowDelay;
-					f.s.value = f.r.value;
-					f.l.value = j.palette;
-				} else { //["ffffff", "ffffff", "ffffff", "ffffff"]
-					var h = '<input type="radio" name="l" id="l' + _i + '" onclick="zl(this)" value="' + _i + '"><label for="l' + _i + '">';
-					for (var i = 0; i < 4; i++) h += '<span style="background-color:#' + j[i] + '"></span>';
-					h += j[4] + '</label><br>';
-					t(s('#l'), h);
-					if (!_i) f.l.checked = 1;
-					_i++;
-				}
-			} else {
-				t(s(d.indexOf('<style>') == 0 ? 'head' : 'body'), d);
-			}
-		};
-	</script>
+			};
+		</script>
+	</body>
 </html>
