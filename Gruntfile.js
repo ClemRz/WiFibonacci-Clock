@@ -1,12 +1,59 @@
 module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        clean: ['client.min.html'],
-        htmlcompressor: {
-            compile: {
-                files: {
-                    'client.min.html': 'client.html'
+        regex_extract: {
+            style: {
+                options: {
+                    regex: '<!-- extract:style\.html -->((:?.|\n)*?)<!-- endextract -->',
+                    includePath : false
                 },
+                files: {
+                    './generated/style.html': ['client.html']
+                }
+            },
+            body: {
+                options: {
+                    regex: '<!-- extract:body\.html -->((:?.|\n)*?)<!-- endextract -->',
+                    includePath : false
+                },
+                files: {
+                    './generated/body.html': ['client.html']
+                }
+            }
+        },
+        replace: {
+            before: {
+                src: 'client.html',
+                dest: './generated/client.min.html',
+                replacements: [{
+                    from: /<!--\s*extract:(.|\n)*?endextract\s?-->/g,
+                    to: ''
+                }]
+            },
+            after: {
+                src: './generated/*.html',
+                dest: './generated/',
+                replacements: [{
+                    from: /console\.[a-z]+\([^\)]*\);?/g,
+                    to: ''
+                }, {
+                    from: /;[\s\r\n]*\}/g,
+                    to: '}'
+                }, {
+                    from: /"/g,
+                    to: '\\"'
+                }]
+            }
+        },
+        htmlcompressor: {
+            default: {
+                files: [{
+                    './generated/client.min.html': './generated/client.min.html'
+                }, {
+                    './generated/style.html': './generated/style.html'
+                }, {
+                    './generated/body.html': './generated/body.html'
+                }],
                 options: {
                     'compress-js': true,
                     'compress-css': true,
@@ -18,38 +65,22 @@ module.exports = function(grunt) {
                 }
             }
         },
-        replace: {
-            template: {
-                src: 'client.min.html',
-                dest: 'client.min.html',
-                replacements: [{
-                    from: /console\.[a-z]+\([^\)]*\);?/g,
-                    to: ''
-                }, {
-                    from: /;[\s\r\n]*\}/g,
-                    to: '}'
-                },{
-                    from: /"/g,
-                    to: '\\"'
-                }]
-            }
-        },
         file_append: {
-            default_options: {
+            default: {
                 files: [{
                     prepend: 'HTTP/1.1 200 OK\\r\\nServer: esp8266\\r\\nContent-Type: text/html\\r\\n\\r\\n',
-                    input: 'client.min.html',
-                    output: 'client.min.html'
+                    input: './generated/client.min.html',
+                    output: './generated/client.min.html'
                 }]
             }
         }
     });
 
     grunt.loadNpmTasks('grunt-htmlcompressor');
-    grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-file-append');
+    grunt.loadNpmTasks('grunt-regex-extract');
 
-    grunt.registerTask('default', ['clean', 'htmlcompressor', 'replace', 'file_append']);
+    grunt.registerTask('default', ['regex_extract', 'replace:before', 'htmlcompressor', 'replace:after', 'file_append']);
 
 };

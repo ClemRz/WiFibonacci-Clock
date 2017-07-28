@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+		<!-- extract:style.html -->
 		<style>
 			html, body {
 				font-family: Arial;
@@ -12,26 +13,115 @@
 				margin: 0;
 				width: 100%;
 				line-height: 2em;
+				box-sizing: border-box;
+			}
+			section {
+				width: 393px;
+				margin: 0 auto;
+			}
+			fieldset>legend {
+				font-weight: bolder;
+			}
+			label>span,
+			div>span {
+				display: inline-block;
+				margin-right: 2px;
+			}
+			div.h {
+				margin-left: 22px;
+			}
+			div>span {
+				width: 52px;
+				text-align: center;
+			}
+			label>span {
+				width: 50px;
+				height: 25px;
+				border: 1px solid black;
+				vertical-align: bottom;
+			}
+			header, footer {
+				text-align: center;
+			}
+			footer {
+				color: #888;
+				font-size: 0.75rem;
 			}
 		</style>
+		<!-- endextract -->
 	</head>
 	<body>
-		<form>
-			Mode:
-			<select name="m" onchange="z(this,'m')">
-				<option value="0">Clock</option>
-				<option value="1">Rainbow Cycle</option>
-				<option value="2">Rainbow</option>
-				<option value="3">Pulse</option>
-				<option value="4">Constant Light</option>
-			</select><br>
-			Date and time: <input type="datetime-local" name="t" oninput="z(this,'t')"> <input type="button" onclick="x(t)" value="now"><br>
-			FlashLight color: <input name="f" type="color" oninput="z(this,'f')"><br>Pulse color: <input name="p" type="color" oninput="z(this,'p')"><br>
-			Pulse delay (ms): <input name="d" type="range" min="1" max="100" oninput="y(this,e,'p')"> <input type="number" name="e" min="1" max="100" oninput="y(this,d,'p')"><br>
-			Rainbow delay (ms): <input name="r" type="range" min="1" max="100" oninput="y(this,s,'r')"> <input type="number" name="s" min="1" max="100" oninput="y(this,r,'r')">
-		</form>
+		<!-- extract:body.html -->
+		<header>
+			<h1>WiFibonacci Clock Settings</h1>
+		</header>
+		<section>
+			<form>
+				<fieldset>
+					<legend>General</legend>
+					<input type="radio" name="m" id="m0" onclick="zm(this)" value="0"><label for="m0">Clock</label><br>
+					<input type="radio" name="m" id="m1" onclick="zm(this)" value="1"><label for="m1">Rainbow Cycle</label><br>
+					<input type="radio" name="m" id="m2" onclick="zm(this)" value="2"><label for="m2">Rainbow</label><br>
+					<input type="radio" name="m" id="m3" onclick="zm(this)" value="3"><label for="m3">Pulse</label><br>
+					<input type="radio" name="m" id="m4" onclick="zm(this)" value="4"><label for="m4">Constant Light</label><br>
+					Brightness: <input name="b" type="range" min="1" max="255" oninput="y(this,c,'b')"> <input type="number" name="c" min="1" max="255" oninput="y(this,b,'b')">
+				</fieldset>
+				<fieldset>
+					<legend>Clock</legend>
+					Date and time: <input type="datetime-local" name="t" oninput="z(this,'t')"> <input type="button" onclick="x(t)" value="now"><br>
+					Palettes:<br>
+					<div class="h"><span>off</span><span>hours</span><span>minutes</span><span>both</span></div>
+					<div id="l"></div>
+					Upload palette:<br>
+					<input type="file" name="i"> <input type="button" onclick="q(i)" value="upload">
+				</fieldset>
+				<fieldset>
+					<legend>Rainbow</legend>
+					Delay (ms): <input name="r" type="range" min="1" max="100" oninput="y(this,s,'r')"> <input type="number" name="s" min="1" max="100" oninput="y(this,r,'r')">
+				</fieldset>
+				<fieldset>
+					<legend>Pulse</legend>
+					Color: <input name="p" type="color" oninput="z(this,'p')"><br>
+					Delay (ms): <input name="d" type="range" min="1" max="100" oninput="y(this,e,'p')"> <input type="number" name="e" min="1" max="100" oninput="y(this,d,'p')">
+				</fieldset>
+				<fieldset>
+					<legend>Constant light</legend>
+					Color: <input name="f" type="color" oninput="z(this,'f')">
+				</fieldset>
+			</form>
+		</section>
+		<footer>
+			&copy; 2017 Clément Ronzon
+		</footer>
+		<!-- endextract -->
 	</body>
 	<script>
+		function p() {
+			alert('Failure');
+		}
+		function q(a) {
+			var f = a.files[0],
+				b = new FileReader();
+			b.onerror = p;
+			b.onload = function(e) {
+				_e = 1;
+				zz(f.name, 'a');
+				zz(e.target.result, 'c');
+			}
+			b.readAsText(f);
+		}
+		function s(a) {
+			return document.querySelector(a);
+		}
+		function t(e, s) {
+			var d = document.createElement('div');
+			d.innerHTML = s;
+			while (d.children.length > 0) e.appendChild(d.children[0]);
+		}
+		function u(a) {
+			var i = a.value * 1;
+			return i === "" || a.min && i < a.min * 1 || a.max && i > a.max * 1;
+		}
 		function v(i) {
 			return (i < 100 ? '0' : '') + i;
 		}
@@ -47,28 +137,68 @@
 				f = a.getMonth(),
 				g = w(a.getDate());
 			t.value = e + '-' + w(f + 1) + '-' + g + 'T' + b + ':' + c + ':' + d; //2009-02-06T01:04:05
-			z({value: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][f] + ' ' + g + ' ' + e + b + ':' + c + ':' + d}, 't'); //Feb 06 200901:04:05
+			zz(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][f] + ' ' + g + ' ' + e + b + ':' + c + ':' + d, 't'); //Feb 06 200901:04:05
 		}
 		function y(a, b, c) {
-			b.value = a.value;
-			z({value: v(w(a.value))}, c);
+			if (u(a)) return;
+			var d = a.value;
+			b.value = d;
+			zz(v(w(d)), c);
 		}
 		function z(a, b) {
-			console.log(b + a.value);
-			_c.send(b + a.value);
+			if (u(a)) return;
+			var c = a.value;
+			console.log(b + c);
+			_c.send(b + c);
 		}
-		var _c = new WebSocket('ws://192.168.4.1:81/', ['arduino']);
+		function zz(a, b) {
+			z({value: a}, b);
+		}
+		function zl(a) {
+			zz(w(a.value), 'l');
+		}
+		function zm(a) {
+			z(a, 'm');
+		}
+		var _c = new WebSocket('ws://192.168.4.1:81/', ['arduino']),
+			_e,
+			_i = 0;
 		_c.onmessage = function (e) {
-			var j = JSON.parse(e.data),
-				f = document.querySelector('form');
-			f.m.value = j.mode;
-			f.t.value = j.dateTime;
-			f.f.value = '#' + j.flashLightColor;
-			f.p.value = '#' + j.pulse.color;
-			f.d.value = j.pulse.delay;
-			f.e.value = f.d.value;
-			f.r.value = j.rainbowDelay;
-			f.s.value = f.r.value;
+			var d = e.data;
+			if (_e) {
+				if (d == 'o') {
+					s('#l').innerHTML = '';
+				} else {
+					p();
+				}
+				_e = 0;
+			}
+			if (d[0] == '{' || d[0] == '[') {
+				var j = JSON.parse(d),
+					f = s('form');
+				if (typeof j.mode != 'undefined') {
+					f.m.value = j.mode;
+					f.b.value = j.brightness;
+					f.c.value = f.b.value
+					f.t.value = j.dateTime;
+					f.f.value = '#' + j.flashLightColor;
+					f.p.value = '#' + j.pulse.color;
+					f.d.value = j.pulse.delay;
+					f.e.value = f.d.value;
+					f.r.value = j.rainbowDelay;
+					f.s.value = f.r.value;
+					f.l.value = j.palette;
+				} else { //["ffffff", "ffffff", "ffffff", "ffffff"]
+					var h = '<input type="radio" name="l" id="l' + _i + '" onclick="zl(this)" value="' + _i + '"><label for="l' + _i + '">';
+					for (var i = 0; i < 4; i++) h += '<span style="background-color:#' + j[i] + '"></span>';
+					h += j[4] + '</label><br>';
+					t(s('#l'), h);
+					if (!_i) f.l.checked = 1;
+					_i++;
+				}
+			} else {
+				t(s(d.indexOf('<style>') == 0 ? 'head' : 'body'), d);
+			}
 		};
 	</script>
 </html>

@@ -1,8 +1,11 @@
 {
-	"flashlightColor": "ffffff",
-	"rainbowDelay": 20,
-	"pulse": {
-		"color": "ffb330",
-		"delay": 20
-	}
+  "flashLightColor": "ffffff",
+  "rainbowDelay": 20,
+  "mode": 0,
+  "brightness": 255,
+  "palette": 0,
+  "pulse": {
+    "color": "ffb330",
+    "delay": 20
+  }
 }
