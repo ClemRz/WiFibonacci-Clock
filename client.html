@@ -200,7 +200,7 @@
 				var data = e.data;
 				if (_c) {
 					if (data == 'o') {
-						_c = JSON.parse(_c.replace(/#/g,''));
+						_c = JSON.parse(_c);
 						_c.push(_a.split('.')[0]);
 						o(_c);
 						_f.i.value = '';
@@ -209,30 +209,32 @@
 					}
 					_c = 0;
 				}
-				if (data[0] == '{' || data[0] == '[') {
-					var json = JSON.parse(data);
-					if (typeof json.mode != 'undefined') {
-						_f.m.value = json.mode;
-						_f.b.value = json.brightness;
-						_f.c.value = _f.b.value;
-						_f.t.value = json.dateTime;
-						_f.f.value = '#' + json.flashLightColor;
-						_f.p.value = '#' + json.pulse.color;
-						_f.d.value = json.pulse.delay;
-						_f.e.value = _f.d.value;
-						_f.r.value = json.rainbowDelay;
-						_f.s.value = _f.r.value;
-						m(json.palette);
-					} else { //["ffffff", "ffffff", "ffffff", "ffffff"]
-						o(json);
-					}
-				} else {
-					if (data[0] == '<') {
+				switch (data[0]) {
+					case '{':
+					case '[':
+						var json = JSON.parse(data);
+						if (typeof json.mode != 'undefined') {
+							_f.m.value = json.mode;
+							_f.b.value = json.brightness;
+							_f.c.value = _f.b.value;
+							_f.t.value = json.dateTime;
+							_f.f.value = '#' + json.flashLightColor;
+							_f.p.value = '#' + json.pulse.color;
+							_f.d.value = json.pulse.delay;
+							_f.e.value = _f.d.value;
+							_f.r.value = json.rainbowDelay;
+							_f.s.value = _f.r.value;
+							m(json.palette);
+						} else { //["ffffff", "ffffff", "ffffff", "ffffff"]
+							o(json);
+						}
+						break;
+					case '<':
 						t(s(data.indexOf('<style>') == 0 ? 'head' : 'body'), data);
 						_f = s('form');
-					} else {
+						break;
+					default:
 						eval(data);
-					}
 				}
 			};
 		</script>

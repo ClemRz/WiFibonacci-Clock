@@ -48,7 +48,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 #if DEBUG
       Serial.printf("[%u] get Text: %s\n", num, payload);
 #endif
-      char c1[8], c2[42];
+      char c1[8], c2[37];
       if (payload[1] == '#') {
         std::copy(payload + 2, payload + 8, c1);
         switch (payload[0]) {
@@ -62,15 +62,14 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       } else {
         switch (payload[0]) {
           case 'a': //amondrian.json
-            std::copy(payload + 1, payload + 40, c2); //TODO check what is the maximum length for the file name
+            std::copy(payload + 1, payload + 38, c2); //TODO check what is the maximum length for the file name
             setNextFileName(c2);
           case 'b': //b001
             std::copy(payload + 1, payload + 4, c1);
             loadBrightness(atoi(c1));
             break;
-          case 'c': //c["#ffffff","#ff0a0a","#f8de00","#0a0aff"]
-            std::copy(payload + 1, payload + 42, c2);
-            c2[41] = (char)0;
+          case 'c': //c["ffffff","ff0a0a","f8de00","0a0aff"]
+            std::copy(payload + 1, payload + 38, c2);
             processPalette(num, c2);
             break;
           case 'd': //d01
@@ -126,7 +125,7 @@ void sendContent(uint8_t num) {
 }
 
 void sendPalettes(uint8_t num) {
-  char buffer[82]; // 41 + filename length //TODO check what is the maximum length for the file name
+  char buffer[74]; // 37 + filename length //TODO check what is the maximum length for the file name
   for(std::vector<Palette>::iterator it = _palettesV.begin(); it != _palettesV.end(); ++it) {
     printPaletteJsonTo(*it, buffer, sizeof(buffer));
     _webSocket.sendTXT(num, buffer);

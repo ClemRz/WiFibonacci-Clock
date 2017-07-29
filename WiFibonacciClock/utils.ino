@@ -20,7 +20,6 @@
  */
 
 uint32_t hexToDec(char* hex) {
-Serial.print(F("HexToDev: "));Serial.println(strtol(hex, NULL, 16)); //TODO remove
   return strtol(hex, NULL, 16);
 }
 
