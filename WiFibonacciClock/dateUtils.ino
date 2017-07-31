@@ -26,6 +26,7 @@ const uint8_t DAYS_ARRAY [] PROGMEM = {31,28,31,30,31,30,31,31,30,31,30,31};
 
 void loadDateTime(const char* date, const char* time) {
   _clock.SetDateTime(RtcDateTime(date, time));
+  refreshIfModeIs(CLOCK_MODE);
 }
 
 char* dateFormat(const char* dateFormat, RtcDateTime dt) {

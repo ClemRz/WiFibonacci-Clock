@@ -22,7 +22,7 @@
 bool readPalettes(void) {
   bool success = false;
   Dir dir = SPIFFS.openDir(PALETTES_PATH);
-  while(dir.next()){
+  while (dir.next()) {
     File palette = dir.openFile("r");
     success = success || readFile(palette, loadPaletteJson);
     palette.close();
@@ -46,12 +46,16 @@ void writeSettings(void) {
   
 }
 
-bool writePalette(String name, char* json) {
+bool writePalette(String name, String json) {
   return writeTxtFile((String)PALETTES_PATH + '/' + name, json);
 }
 
 void deletePalette(uint8_t index) {
-  deleteFile((String)PALETTES_PATH + '/' + _palettesV.at(index).name + ".json");
+  if (deleteFile((String)PALETTES_PATH + '/' + _palettesV.at(index).name + ".json")) {
+    _settings.palette = 0;
+    _palettesV.erase(_palettesV.begin() + index);
+    refreshIfModeIs(CLOCK_MODE);
+  }
 }
 
 void writeBinFile(String name, uint8_t * bin, size_t length) {
@@ -60,11 +64,11 @@ void writeBinFile(String name, uint8_t * bin, size_t length) {
 #endif
 }
 
-bool writeTxtFile(String path, char* content) {
+bool writeTxtFile(String path, String content) {
   File file = SPIFFS.open(path, "w");
   if (file) {
 #if DEBUG
-    Serial.print(F("Writing content: "));Serial.println(content);
+    Serial.print(F("Writing content: "));Serial.print(content);Serial.print(F(" to: "));Serial.println(path);
 #endif  //DEBUG
     file.print(content);
     file.close();
@@ -87,7 +91,6 @@ bool readFile(File file, std::function<bool (char* json, String name)> callback)
     if (size <= 1024) {
       std::unique_ptr<char[]> buf(new char[size]);
       file.readBytes(buf.get(), size);
-      file.close();
       return callback(buf.get(), getBaseName(name));
 #if DEBUG
     } else {

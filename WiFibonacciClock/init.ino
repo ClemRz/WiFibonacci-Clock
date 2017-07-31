@@ -67,6 +67,7 @@ void initDS3231(void) {
 void initLedStrip(void) {
   _ledStrip.begin();
   _ledStrip.show();
+  std::fill_n(_randomBrightness, CLOCK_PIXELS, 255);
 }
 
 void initRandom(void) {

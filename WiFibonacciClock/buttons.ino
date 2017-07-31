@@ -32,8 +32,9 @@ bool debounce(int pin) {
 #if DEBUG
       Serial.print(F("Button ")); Serial.print(pin); Serial.print(F(" changed to ")); Serial.println(reading); 
 #endif
-    } else if (canChangeBrightness(pin) && reading) {
-      fadeLedStrip(FADING_DELAY_MS);
+    } else if (canChangeBrightness(pin) && reading && _timer1 < millis()) {
+      fadeLedStrip();
+      _timer1 = FADING_DELAY_MS + millis();
     }
   }
 
@@ -53,6 +54,6 @@ void handleButtons(void) {
 }
 
 bool canChangeBrightness(int pin) {
-  return _settings.mode != PULSE_MODE && pin == BRIGHTNESS_BUTTON;
+  return !noBrightnessMode(_settings.mode) && pin == BRIGHTNESS_BUTTON;
 }
 

@@ -49,53 +49,97 @@ void handleModes(void) {
     case RAINBOW_MODE:
       rainbow(_settings.rainbowDelay);
       break;
+    case RANDOM_MODE:
+      randm(_settings.randomDelay, _settings.randomEase);
+      break;
     case PULSE_MODE:
       pulse(_settings.pulseColor, _settings.pulseDelay);
+      break;
     case FLASH_LIGHT_MODE:
       flashLight(_settings.flashLightColor);
       break;
   }
+  _refreshLedStrip = false;
+}
+
+bool shouldRefreshLedStrip() {
+  return _refreshLedStrip || _timing < millis();
+}
+
+bool timerMs(uint32_t ms) {
+  _timing = millis() + ms;
 }
 
 void displayCurrentTime() {
   RtcDateTime dt = _clock.GetDateTime();
   setTime(dt.Hour() % 12, dt.Minute());
+  timerMs(1 * SEC * MILLISEC);
 }
 
-void rainbowCycle(uint8_t delayMs) {
+void rainbowCycle(uint32_t delayMs) {
   for (uint8_t i = 0; i < CLOCK_PIXELS; i++) setPixel(i, wheel(((i * 256 / CLOCK_PIXELS) + _j) & 255));
   _ledStrip.show();
   _j = (_j + 1) % (256 * 5);
-  delay(delayMs);
+  timerMs(delayMs);
 }
 
-void rainbow(uint8_t delayMs) {
+void rainbow(uint32_t delayMs) {
   for(uint8_t i = 0; i < CLOCK_PIXELS; i++) setPixel(i, wheel((i + _j) & 255));
   _ledStrip.show();
   _j = (_j + 1) % 256;
-  delay(delayMs);
+  timerMs(delayMs);
+}
+
+void randm(uint32_t delayMs, uint8_t easeMs) {
+  bool show = false;
+  unsigned long m = millis();
+  if (_timer1 < m) {
+    uint8_t pixel = random(0, CLOCK_PIXELS);
+    uint32_t color = random(0, 16777216); //2^(3*8)
+    _randomBrightness[pixel] = 255;
+    _randomColor[pixel] = color;
+    setPixel(pixel, color);
+    show = true;
+    _timer1 = m + delayMs;
+  }
+  if (_timer2 < m) {
+    for (uint8_t i= 0; i < CLOCK_PIXELS; i++) {
+      if (_randomBrightness[i] > 0) {
+        _randomBrightness[i] = _randomBrightness[i] - 1;
+        setPixelBrightness(i, _randomBrightness[i], _randomColor[i]);
+      }
+    }
+    show = true;
+    _timer2 = m + easeMs;
+  }
+  if (show) _ledStrip.show();
+  timerMs(_min(delayMs, easeMs));
 }
 
 void flashLight(uint32_t color) {
-  if (_refreshLedStrip) {
-    for (uint8_t i= 0; i < CLOCK_PIXELS; i++) setPixel(i, color);
-    _ledStrip.show();
-    _refreshLedStrip = false;
-  }
+  for (uint8_t i= 0; i < CLOCK_PIXELS; i++) setPixel(i, color);
+  _ledStrip.show();
 }
 
-void pulse(uint32_t color, unsigned long delayMs) {
+void pulse(uint32_t color, uint32_t delayMs) {
   for (uint8_t i= 0; i < CLOCK_PIXELS; i++) setPixel(i, color);
   switchLedStripStatus();
-  fadeLedStrip(delayMs);
+  fadeLedStrip();
+  timerMs(delayMs);
+}
+
+void refreshIfModeIs(uint8_t mode) {
+  if (_settings.mode == mode) _refreshLedStrip = true;
+}
+
+bool noBrightnessMode(uint8_t mode) {
+  return mode == RANDOM_MODE || mode == PULSE_MODE;
 }
 
 void loadMode(uint8_t index) {
   index = index % MODES_SIZE;
-  if (_settings.mode != index) {
-    if (index == PULSE_MODE) backupBrightness();
-    if (_settings.mode == PULSE_MODE) restoreBrightness();
-  }
+  if (noBrightnessMode(index) && !noBrightnessMode(_settings.mode)) backupBrightness();
+  if (!noBrightnessMode(index) && noBrightnessMode(_settings.mode)) restoreBrightness();
   _settings.mode = index;
   _refreshLedStrip = true;
 #if DEBUG
@@ -106,33 +150,45 @@ void loadMode(uint8_t index) {
 void loadPalette(uint8_t index) {
     index = index % _palettesV.size();
     _settings.palette = index;
-    _refreshLedStrip = true;
+    refreshIfModeIs(CLOCK_MODE);
 #if DEBUG
     Serial.print(F("Palette: ")); Serial.println(_settings.palette);
 #endif
 }
 
-void loadPulseDelay(long delay) {
-  _settings.pulseDelay = delay;
+void loadRandomDelay(uint32_t delayMs) {
+  _settings.randomDelay = delayMs;
+  refreshIfModeIs(RANDOM_MODE);
 }
 
-void loadRainbowDelay(long delay) {
-  _settings.rainbowDelay = delay;
+void loadRandomEase(long ease) {
+  _settings.randomEase = ease;
+  refreshIfModeIs(RANDOM_MODE);
+}
+
+void loadPulseDelay(long delayMs) {
+  _settings.pulseDelay = delayMs;
+  refreshIfModeIs(PULSE_MODE);
+}
+
+void loadRainbowDelay(uint32_t delayMs) {
+  _settings.rainbowDelay = delayMs;
+  refreshIfModeIs(RAINBOW_MODE);
 }
 
 void loadFlashLightColor(char* hexColor) {
   _settings.flashLightColor = hexToDec(hexColor);
-  _refreshLedStrip = true;
+  refreshIfModeIs(FLASH_LIGHT_MODE);
 }
 
 void loadPulseColor(char* hexColor) {
   _settings.pulseColor = hexToDec(hexColor);
-  _refreshLedStrip = true;
+  refreshIfModeIs(PULSE_MODE);
 }
 
 void loadBrightness(uint8_t brightness) {
   _settings.brightness = brightness;
-  if (_settings.mode == PULSE_MODE) return;
+  if (noBrightnessMode(_settings.mode)) return;
   applyCorrectedBrightness();
 }
 
@@ -144,24 +200,39 @@ void restoreBrightness(void) {
   _ledStrip.setBrightness(_brightnessBackup);
 }
 
-void fadeLedStrip(unsigned long delayMs) {
+void fadeLedStrip() {
   if (_ledStripOn) {
-    fadeLedStripOff(delayMs);
+    fadeLedStripOff();
   } else {
-    fadeLedStripOn(delayMs);
+    fadeLedStripOn();
   }
 }
 
-void fadeLedStripOff(uint8_t delayMs) {
+void fadeLedStripOff(void) {
   _settings.brightness = _settings.brightness > FADING_STEP ? _settings.brightness - FADING_STEP : 0;
   applyCorrectedBrightness();
-  delay(delayMs);
 }
 
-void fadeLedStripOn(uint8_t delayMs) {
+void fadeLedStripOn(void) {
   _settings.brightness = _settings.brightness < 255 - FADING_STEP ? _settings.brightness + FADING_STEP : 255;
   applyCorrectedBrightness();
-  delay(delayMs);
+}
+
+void setPixelBrightness(uint8_t pixel, uint8_t brightness, uint32_t color) {
+  setPixel(pixel, getColorForBrightness(color, brightness));
+}
+
+uint32_t getColorForBrightness(uint32_t color, uint8_t brightness) {
+  uint8_t r = (uint8_t)(color >> 16),
+          g = (uint8_t)(color >>  8),
+          b = (uint8_t)color,
+          br =gammaCorrect(brightness) + 1;
+  r = (r * br) >> 8;
+  g = (g * br) >> 8;
+  b = (b * br) >> 8;
+  return ((uint32_t)r << 16) |
+         ((uint32_t)g <<  8) |
+          (uint32_t)b;
 }
 
 void applyCorrectedBrightness(void) {
@@ -202,7 +273,6 @@ void setTime(byte hours, byte minutes) {
 #if DEBUG
     Serial.print(hours); Serial.print(F(":")); Serial.println(minutes);
 #endif
-    _refreshLedStrip = false;
     _hours = hours;
     _minutes = minutes;
     
@@ -238,7 +308,6 @@ void setPixel(byte pixel, uint32_t color) {
       _ledStrip.setPixelColor(6, color);
       _ledStrip.setPixelColor(7, color);
       _ledStrip.setPixelColor(8, color);
-      _ledStrip.setPixelColor(9, color);
       break;
   }
 }

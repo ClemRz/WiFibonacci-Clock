@@ -19,6 +19,13 @@
     Source code inspired from Fibonacci Clock https://github.com/pchretien/fibo
  */
 
+/*TODOs:
+    - only first palette is read from SPIFFS
+    - save the settings every once in a while
+    - add a reset factory settings button in the UI
+    - add a save / restore UI for the settings
+*/
+
 #include <Wire.h>                 // https://github.com/esp8266/Arduino/
 #include <ESP8266WiFi.h>          // https://github.com/esp8266/Arduino/
 #include <WiFiClient.h>           // https://github.com/esp8266/Arduino/
@@ -71,12 +78,13 @@ using namespace ArduinoJson;
 #define FADING_STEP               1               // 214 steps total means a delay of 214/1*8 = 1,712ms to fade the complete range aprox.
 #define CLOCK_PIXELS              5               // Number of fisical cells
 #define LEDS_SIZE                 9               // Number of LEDs
-#define MODES_SIZE                5               // Number of modes
+#define MODES_SIZE                6               // Number of modes
 #define CLOCK_MODE                0
 #define RAINBOW_CYCLE_MODE        1
 #define RAINBOW_MODE              2
-#define PULSE_MODE                3
-#define FLASH_LIGHT_MODE          4
+#define RANDOM_MODE               3
+#define PULSE_MODE                4
+#define FLASH_LIGHT_MODE          5
 
 // File system configs
 #define PALETTES_PATH             "/palettes"
@@ -84,24 +92,30 @@ using namespace ArduinoJson;
 
 // Defaults
 #define DEFAULT_PALETTE           "[\"ffffff\",\"ff0a0a\",\"0aff0a\",\"0a0aff\"]"
-#define DEFAULT_SETTINGS          "{\"mode\":0,\"brightness\":255,\"palette\":0,\"flashLightColor\":\"ffffff\",\"rainbowDelay\":20,\"pulse\":{\"color\":\"ffb330\",\"delay\":20}}"
+#define DEFAULT_SETTINGS          "{\"mode\":0,\"brightness\":255,\"palette\":0,\"flashLightColor\":\"ffffff\",\"rainbowDelay\":40,\"pulse\":{\"color\":\"ffb330\",\"delay\":20},\"random\":{\"ease\":25,\"delay\":1750}}"
 
 // HTML
 /*
 * Can be found in ./generated/
 * Use grunt to generate those from client.html (install dependencies with npm)
 */
-#define UI_HTTP_PAYLOAD           "HTTP/1.1 200 OK\r\nServer: esp8266\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE html><html><head><meta name=viewport content=\"initial-scale=1,maximum-scale=1,user-scalable=no\"></head><body><script>function s(a){return document.querySelector(a)}function t(a,b){var c=document.createElement(\"div\");c.innerHTML=b;while(c.children.length>0){a.appendChild(c.children[0])}}var _a,_c,_f,_w=new WebSocket(\"ws://192.168.4.1:81/\",[\"arduino\"]);_w.onmessage=function(e){var data=e.data;if(_c){if(data==\"o\"){_c=JSON.parse(_c);_c.push(_a.split(\".\")[0]);o(_c);_f.i.value=\"\"}else{p()}_c=0}switch(data[0]){case\"{\":case\"[\":var json=JSON.parse(data);if(typeof json.mode!=\"undefined\"){_f.m.value=json.mode;_f.b.value=json.brightness;_f.c.value=_f.b.value;_f.t.value=json.dateTime;_f.f.value=\"#\"+json.flashLightColor;_f.p.value=\"#\"+json.pulse.color;_f.d.value=json.pulse.delay;_f.e.value=_f.d.value;_f.r.value=json.rainbowDelay;_f.s.value=_f.r.value;m(json.palette)}else{o(json)}break;case\"<\":t(s(data.indexOf(\"<style>\")==0?\"head\":\"body\"),data);_f=s(\"form\");break;default:eval(data)}};</script></body></html>"
-#define UI_JS_SCRIPT              "window.m=function(n){_f.l[n].checked=1},window.n=function(n){for(var e=n.parentNode,o=0;e.previousElementSibling;)e=e.previousElementSibling,o++;return w(o)},window.o=function(n){for(var e=Math.random(),o='<div><input type=\"radio\" name=\"l\" id=\"l'+e+'\" onclick=\"zl(this)\"><label for=\"l'+e+'\">',i=0;i<4;i++)o+='<span style=\"background-color:#'+n[i]+'\"></span>';o+=n[4]+\"</label>\",_f.l&&(o+='<a href=\"#\" onclick=\"zd(this)\">X</a>'),o+=\"</div>\",t(s(\"#l\"),o),_f.l.value||m(0)},window.p=function(){alert(\"Failure\")},window.q=function(n){var e=n.files[0],o=new FileReader;o.onerror=p,o.onload=function(n){_c=n.target.result,_a=e.name,zz(_a,\"a\"),zz(_c,\"c\")},o.readAsText(e)},window.u=function(n){var e=1*n.value;return\"\"===e||n.min&&e<1*n.min||n.max&&e>1*n.max},window.v=function(n){return(n<100?\"0\":\"\")+n},window.w=function(n){return(n<10?\"0\":\"\")+n},window.x=function(n){var e=new Date,o=w(e.getHours()),i=w(e.getMinutes()),t=w(e.getSeconds()),a=e.getFullYear(),l=e.getMonth(),u=w(e.getDate());n.value=a+\"-\"+w(l+1)+\"-\"+u+\"T\"+o+\":\"+i+\":\"+t,zz([\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"][l]+\" \"+u+\" \"+a+o+\":\"+i+\":\"+t,\"t\")},window.y=function(n,e,o){if(!u(n)){var i=n.value;e.value=i,zz(v(w(i)),o)}},window.z=function(n,e){if(!u(n)){var o=n.value;_w.send(e+o)}},window.zz=function(n,e){z({value:n},e)},window.zl=function(e){zz(n(e),\"l\")},window.zd=function(e){zz(n(e),\"d\"),e.parentNode.remove(),_f.l.value||_f.l[0].click()},window.zm=function(n){z(n,\"m\")};"
-#define UI_HTML_BODY              "<header><h1>WiFibonacci Clock Settings</h1></header><section><form><fieldset><legend>General</legend><input type=radio name=m id=m0 onclick=\"zm(this)\" value=0><label for=m0>Clock</label><br><input type=radio name=m id=m1 onclick=\"zm(this)\" value=1><label for=m1>Rainbow Cycle</label><br><input type=radio name=m id=m2 onclick=\"zm(this)\" value=2><label for=m2>Rainbow</label><br><input type=radio name=m id=m3 onclick=\"zm(this)\" value=3><label for=m3>Pulse</label><br><input type=radio name=m id=m4 onclick=\"zm(this)\" value=4><label for=m4>Constant Light</label><br> Brightness: <input name=b type=range min=1 max=255 oninput=\"y(this,c,'b')\"><input type=number name=c min=1 max=255 oninput=\"y(this,b,'b')\"></fieldset><fieldset><legend>Clock</legend> Date and time:<br><input type=datetime-local name=t oninput=\"z(this,'t')\"><input type=button onclick=\"x(t)\" value=now><br> Palettes:<br><div class=h><span>off</span><span>hours</span><span>minutes</span><span>both</span></div><div id=l></div> Upload palette:<br><input type=file name=i><input type=button onclick=\"q(i)\" value=upload></fieldset><fieldset><legend>Rainbow</legend> Delay (ms): <input name=r type=range min=1 max=100 oninput=\"y(this,s,'r')\"><input type=number name=s min=1 max=100 oninput=\"y(this,r,'r')\"></fieldset><fieldset><legend>Pulse</legend> Color: <input name=p type=color oninput=\"z(this,'p')\"><br> Delay (ms): <input name=d type=range min=1 max=100 oninput=\"y(this,e,'p')\"><input type=number name=e min=1 max=100 oninput=\"y(this,d,'p')\"></fieldset><fieldset><legend>Constant light</legend> Color: <input name=f type=color oninput=\"z(this,'f')\"></fieldset></form></section><footer> &copy; 2017 Clément Ronzon </footer>"
+#define UI_HTTP_PAYLOAD           "HTTP/1.1 200 OK\r\nServer: esp8266\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE html><html><head><meta name=viewport content=\"initial-scale=1,maximum-scale=1,user-scalable=no\"></head><body><script>function s(a){return document.querySelector(a)}function t(a,b){var c=document.createElement(\"div\");c.innerHTML=b;while(c.children.length>0){a.appendChild(c.children[0])}}var _a,_c,_f,_w=new WebSocket(\"ws://192.168.4.1:81/\",[\"arduino\"]);_w.onmessage=function(e){var data=e.data;if(_c){if(data==\"o\"){_c=JSON.parse(_c);_c.push(_a.split(\".\")[0]);o(_c);_f.i.value=\"\"}else{p()}_c=0}switch(data[0]){case\"{\":case\"[\":var json=JSON.parse(data);if(typeof json.mode!=\"undefined\"){_f.b.value=json.brightness;_f.c.value=_f.b.value;_f.d.value=json.pulse.delay;_f.e.value=_f.d.value;_f.f.value=\"#\"+json.flashLightColor;_f.g.value=json.random.ease;_f.h.value=_f.g.value;_f.j.value=json.random.delay;_f.k.value=_f.j.value;m(json.palette);_f.m.value=json.mode;_f.p.value=\"#\"+json.pulse.color;_f.r.value=json.rainbowDelay;_f.s.value=_f.r.value;_f.t.value=json.dateTime}else{o(json)}break;case\"<\":t(s(data.indexOf(\"<style>\")==0?\"head\":\"body\"),data);_f=s(\"form\");break;default:eval(data)}};</script></body></html>"
+#define UI_JS_SCRIPT              "window.m=function(n){(_f.l[n]?_f.l[n]:_f.l).checked=1},window.n=function(n){for(var e=n.parentNode,o=0;e.previousElementSibling;)e=e.previousElementSibling,o++;return v(o)},window.o=function(n){for(var e=Math.random(),o='<div><input type=\"radio\" name=\"l\" id=\"l'+e+'\" onclick=\"zl(this)\"><label for=\"l'+e+'\">',i=0;i<4;i++)o+='<span style=\"background-color:#'+n[i]+'\"></span>';o+=n[4]+\"</label>\",_f.l&&(o+='<a href=\"#\" onclick=\"zd(this)\">X</a>'),o+=\"</div>\",t(s(\"#l\"),o)},window.p=function(){alert(\"Failure\")},window.q=function(n){var e=n.files[0],o=new FileReader;o.onerror=p,o.onload=function(n){_c=n.target.result,_a=e.name,zz(_a,\"a\"),zz(_c,\"c\")},o.readAsText(e)},window.u=function(n){var e=1*n.value;return\"\"===e||n.min&&e<1*n.min||n.max&&e>1*n.max},window.v=function(n){return w(n,2)},window.w=function(n,e){for(n+=\"\";n.length<e;)n=\"0\"+n;return n},window.x=function(n){var e=new Date,o=v(e.getHours()),i=v(e.getMinutes()),t=v(e.getSeconds()),a=e.getFullYear(),r=e.getMonth(),l=v(e.getDate());n.value=a+\"-\"+v(r+1)+\"-\"+l+\"T\"+o+\":\"+i+\":\"+t,zz([\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"][r]+\" \"+l+\" \"+a+o+\":\"+i+\":\"+t,\"t\")},window.y=function(n,e,o){if(!u(n)){var i=n.value;e.value=i,zz(w(i,4),o)}},window.z=function(n,e){if(!u(n)){var o=n.value;_w.send(e+o)}},window.zz=function(n,e){z({value:n},e)},window.zl=function(e){zz(n(e),\"l\")},window.zd=function(e){zz(n(e),\"d\"),e.parentNode.remove(),m(0)},window.zm=function(n){z(n,\"m\")};"
+#define UI_HTML_BODY              "<header><h1>WiFibonacci Clock Settings</h1></header><section><form><fieldset><legend>General</legend><input type=radio name=m id=m0 onclick=\"zm(this)\" value=0><label for=m0>Clock</label><br><input type=radio name=m id=m1 onclick=\"zm(this)\" value=1><label for=m1>Rainbow Cycle</label><br><input type=radio name=m id=m2 onclick=\"zm(this)\" value=2><label for=m2>Rainbow</label><br><input type=radio name=m id=m3 onclick=\"zm(this)\" value=3><label for=m3>Random</label><br><input type=radio name=m id=m4 onclick=\"zm(this)\" value=4><label for=m4>Pulse</label><br><input type=radio name=m id=m5 onclick=\"zm(this)\" value=5><label for=m5>Constant Light</label><br> Brightness: <input name=b type=range min=1 max=255 oninput=\"y(this,c,'b')\"><input type=number name=c min=1 max=255 oninput=\"y(this,b,'b')\"></fieldset><fieldset><legend>Clock</legend> Date and time:<br><input type=datetime-local name=t oninput=\"z(this,'t')\"><input type=button onclick=\"x(t)\" value=now><br> Palettes:<br><div class=h><span>off</span><span>hours</span><span>minutes</span><span>both</span></div><div id=l></div> Upload palette:<br><input type=file name=i><input type=button onclick=\"q(i)\" value=upload></fieldset><fieldset><legend>Rainbow</legend> Delay (ms): <input name=r type=range min=1 max=100 oninput=\"y(this,s,'r')\"><input type=number name=s min=1 max=100 oninput=\"y(this,r,'r')\"></fieldset><fieldset><legend>Random</legend> Ease (ms): <input name=g type=range min=1 max=100 oninput=\"y(this,h,'g')\"><input type=number name=h min=1 max=100 oninput=\"y(this,g,'g')\"><br> Delay (ms): <input name=j type=range min=1 max=9999 oninput=\"y(this,k,'j')\"><input type=number name=k min=1 max=9999 oninput=\"y(this,j,'j')\"></fieldset><fieldset><legend>Pulse</legend> Color: <input name=p type=color oninput=\"z(this,'p')\"><br> Delay (ms): <input name=d type=range min=1 max=100 oninput=\"y(this,e,'p')\"><input type=number name=e min=1 max=100 oninput=\"y(this,d,'p')\"></fieldset><fieldset><legend>Constant light</legend> Color: <input name=f type=color oninput=\"z(this,'f')\"></fieldset></form></section><footer> &copy; 2017 Clément Ronzon </footer>"
 #define UI_HTML_STYLE             "<style>html,body{font-family:Arial;font-size:14px;background:#fff;padding:3px;color:#000;margin:0;width:100%;line-height:2em;box-sizing:border-box}section{width:350px;margin:0 auto}fieldset>legend{font-weight:bolder}label>span,div>span{display:inline-block;margin-right:2px}div.h{margin-left:22px}div>span{width:52px;text-align:center}label>span{width:50px;height:25px;border:1px solid black;vertical-align:bottom}header,footer{text-align:center}footer{color:#888;font-size:.75rem}#l a{margin-left:5px}</style>"
 
 // Global variables
 Settings _settings;
 std::vector<Palette> _palettesV;
-unsigned long _lastDebounceTime = 0;
+unsigned long
+  _lastDebounceTime = 0,
+  _timing = 0,
+  _timer1 = 0,
+  _timer2 = 0;
 uint8_t
-  _brightnessBackup = 255;
+  _brightnessBackup = 255,
+  _randomBrightness[CLOCK_PIXELS];
+uint32_t _randomColor[CLOCK_PIXELS];
 int _j = 0;
 bool
   _lastButtonState[BUTTONS_SIZE],
@@ -132,7 +146,7 @@ void setup(void) {
 
 void loop(void) {
   handleButtons();
-  handleModes();
+  if (shouldRefreshLedStrip()) handleModes();
   _webSocket.loop();
 }
 

@@ -51,7 +51,7 @@ bool loadSettingsJson(char* json, String unused) {
 #if DEBUG
   Serial.println(json);
 #endif
-  Parser::JsonParser<21> parser;
+  Parser::JsonParser<27> parser;
   Parser::JsonObject p = parser.parse(json);
   if (p.success()) {
     loadFlashLightColor(p["flashLightColor"]);
@@ -62,6 +62,8 @@ bool loadSettingsJson(char* json, String unused) {
     loadBrightness(atoi(p["brightness"]));
     loadMode(atoi(p["mode"]));
     loadPalette(atoi(p["palette"]));
+    loadRandomDelay(atoi(p["random"]["delay"]));
+    loadRandomEase(atoi(p["random"]["ease"]));
     return true;
 #if DEBUG
   } else {
@@ -77,7 +79,10 @@ void printSettingsJsonTo(char* buffer, size_t bufferSize) {
   decToHex(_settings.pulseColor, buff1, sizeof(buff1));
   pulse["color"] = buff1;
   pulse["delay"] = (long)_settings.pulseDelay;
-  Generator::JsonObject<7> settings;
+  Generator::JsonObject<2> randm;
+  randm["delay"] = (long)_settings.randomDelay;
+  randm["ease"] = (long)_settings.randomEase;
+  Generator::JsonObject<8> settings;
   decToHex(_settings.flashLightColor, buff2, sizeof(buff2));
   settings["dateTime"] = dateFormat("Y-m-dTH:i:s", _clock.GetDateTime());
   settings["flashLightColor"] = buff2;
@@ -86,6 +91,7 @@ void printSettingsJsonTo(char* buffer, size_t bufferSize) {
   settings["brightness"] = _settings.brightness;
   settings["palette"] = _settings.palette;
   settings["pulse"] = pulse;
+  settings["random"] = randm;
   settings.printTo(buffer, bufferSize);
 #if DEBUG
   settings.prettyPrintTo(Serial); Serial.println();

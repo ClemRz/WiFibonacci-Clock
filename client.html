@@ -56,7 +56,7 @@
 	<body>
 		<!-- extract:body.html -->
 		<header>
-			<h1>WiFibonacci Clock Settings</h1>
+			<h1>WiFibonacci Clock Settings</h1><!-- a,b,c,d,e,f,g,h,i,j,k,l,m,p,r,s,t -->
 		</header>
 		<section>
 			<form>
@@ -65,8 +65,9 @@
 					<input type="radio" name="m" id="m0" onclick="zm(this)" value="0"><label for="m0">Clock</label><br>
 					<input type="radio" name="m" id="m1" onclick="zm(this)" value="1"><label for="m1">Rainbow Cycle</label><br>
 					<input type="radio" name="m" id="m2" onclick="zm(this)" value="2"><label for="m2">Rainbow</label><br>
-					<input type="radio" name="m" id="m3" onclick="zm(this)" value="3"><label for="m3">Pulse</label><br>
-					<input type="radio" name="m" id="m4" onclick="zm(this)" value="4"><label for="m4">Constant Light</label><br>
+					<input type="radio" name="m" id="m3" onclick="zm(this)" value="3"><label for="m3">Random</label><br>
+					<input type="radio" name="m" id="m4" onclick="zm(this)" value="4"><label for="m4">Pulse</label><br>
+					<input type="radio" name="m" id="m5" onclick="zm(this)" value="5"><label for="m5">Constant Light</label><br>
 					Brightness: <input name="b" type="range" min="1" max="255" oninput="y(this,c,'b')"> <input type="number" name="c" min="1" max="255" oninput="y(this,b,'b')">
 				</fieldset>
 				<fieldset>
@@ -82,6 +83,11 @@
 				<fieldset>
 					<legend>Rainbow</legend>
 					Delay (ms): <input name="r" type="range" min="1" max="100" oninput="y(this,s,'r')"> <input type="number" name="s" min="1" max="100" oninput="y(this,r,'r')">
+				</fieldset>
+				<fieldset>
+					<legend>Random</legend>
+					Ease (ms): <input name="g" type="range" min="1" max="100" oninput="y(this,h,'g')"> <input type="number" name="h" min="1" max="100" oninput="y(this,g,'g')"><br>
+					Delay (ms): <input name="j" type="range" min="1" max="9999" oninput="y(this,k,'j')"> <input type="number" name="k" min="1" max="9999" oninput="y(this,j,'j')">
 				</fieldset>
 				<fieldset>
 					<legend>Pulse</legend>
@@ -102,7 +108,8 @@
 			/* extract:script.js */
 			// Keep in mind that anything defined inside this extracted section will live in the scope of _w.onmessage function. Remember to publish whatever needs to be published.
 			window.m = function(i) {
-				_f.l[i].checked = 1;
+				var l = _f.l[i] ? _f.l[i] : _f.l;
+				l.checked = 1;
 			};
 			window.n = function(a) {
 				var li = a.parentNode,
@@ -111,7 +118,7 @@
 					li = li.previousElementSibling;
 					i ++;
 				}
-				return w(i);
+				return v(i);
 			};
 			window.o = function(arr) {
 				var rand = Math.random(),
@@ -121,7 +128,6 @@
 				if (_f.l) html += '<a href="#" onclick="zd(this)">X</a>';
 				html += '</div>';
 				t(s('#l'), html);
-				if (!_f.l.value) m(0);
 			};
 			window.p = function() {
 				alert('Failure');
@@ -143,27 +149,29 @@
 				return val === '' || input.min && val < input.min * 1 || input.max && val > input.max * 1;
 			};
 			window.v = function(val) {
-				return (val < 100 ? '0' : '') + val;
+				return w(val, 2);
 			};
-			window.w = function(val) {
-				return (val < 10 ? '0' : '') + val;
+			window.w = function(val, size) {
+				val += '';
+				while (val.length < size) val = '0' + val;
+				return val;
 			};
 			window.x = function(input) {
 				var date = new Date(),
-					hours = w(date.getHours()),
-					minutes = w(date.getMinutes()),
-					seconds = w(date.getSeconds()),
+					hours = v(date.getHours()),
+					minutes = v(date.getMinutes()),
+					seconds = v(date.getSeconds()),
 					year = date.getFullYear(),
 					month = date.getMonth(),
-					day = w(date.getDate());
-				input.value = year + '-' + w(month + 1) + '-' + day + 'T' + hours + ':' + minutes + ':' + seconds; //2009-02-06T01:04:05
+					day = v(date.getDate());
+				input.value = year + '-' + v(month + 1) + '-' + day + 'T' + hours + ':' + minutes + ':' + seconds; //2009-02-06T01:04:05
 				zz(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month] + ' ' + day + ' ' + year + hours + ':' + minutes + ':' + seconds, 't'); //Feb 06 200901:04:05
 			};
 			window.y = function(input1, input2, code) {
 				if (u(input1)) return;
 				var val = input1.value;
 				input2.value = val;
-				zz(v(w(val)), code);
+				zz(w(val, 4), code);
 			};
 			window.z = function(input, code) {
 				if (u(input)) return;
@@ -180,7 +188,7 @@
 			window.zd = function(a) {
 				zz(n(a), 'd');
 				a.parentNode.remove();
-				if (!_f.l.value) _f.l[0].click();
+				m(0);
 			};
 			window.zm = function(input) {
 				z(input, 'm');
@@ -214,17 +222,21 @@
 					case '[':
 						var json = JSON.parse(data);
 						if (typeof json.mode != 'undefined') {
-							_f.m.value = json.mode;
 							_f.b.value = json.brightness;
 							_f.c.value = _f.b.value;
-							_f.t.value = json.dateTime;
-							_f.f.value = '#' + json.flashLightColor;
-							_f.p.value = '#' + json.pulse.color;
 							_f.d.value = json.pulse.delay;
 							_f.e.value = _f.d.value;
+							_f.f.value = '#' + json.flashLightColor;
+							_f.g.value = json.random.ease;
+							_f.h.value = _f.g.value;
+							_f.j.value = json.random.delay;
+							_f.k.value = _f.j.value;
+							m(json.palette);
+							_f.m.value = json.mode;
+							_f.p.value = '#' + json.pulse.color;
 							_f.r.value = json.rainbowDelay;
 							_f.s.value = _f.r.value;
-							m(json.palette);
+							_f.t.value = json.dateTime;
 						} else { //["ffffff", "ffffff", "ffffff", "ffffff"]
 							o(json);
 						}

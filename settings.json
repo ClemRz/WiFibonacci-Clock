@@ -7,5 +7,9 @@
   "pulse": {
     "color": "ffb330",
     "delay": 20
+  },
+  "random": {
+  	"delay": 1000,
+  	"ease": 10
   }
 }
