@@ -27,16 +27,16 @@ void loadDefaultSettings(void) {
   loadSettingsJson(DEFAULT_SETTINGS, "");
 }
  
-bool loadPaletteJson(char* json, String name) {
+bool loadPaletteJson(char* json, String fileName) {
 #if DEBUG
-  Serial.print(name);Serial.print(F(": "));Serial.println(json);
+  Serial.print(fileName);Serial.print(F(": "));Serial.println(json);
 #endif
   Parser::JsonParser<5> parser; // one palette is 1+4*1=5 tokens
   Parser::JsonArray p = parser.parseArray(json);
   if (p.success()) {
     Palette palette;
     for (uint8_t i = 0; i < 4; i++) palette.at[i] = hexToDec((char*)p[i]);
-    palette.name = name;
+    palette.name = fileName;
     _palettesV.push_back(palette);
     return true;
 #if DEBUG
@@ -99,14 +99,13 @@ void printSettingsJsonTo(char* buffer, size_t bufferSize) {
 }
 
 void printPaletteJsonTo(Palette palette, char* buffer, size_t bufferSize) {
-  char buff[4][7], nameBuff[42]; //TODO what is the limit for the filename?
+  char buff[4][7];
   Generator::JsonArray<5> arr;
   for(uint8_t i = 0; i < 4; i++) {
     decToHex(palette.at[i], buff[i], sizeof(buff[i]));
     arr.add(buff[i]);
   }
-  palette.name.toCharArray(nameBuff, sizeof(nameBuff));
-  arr.add(nameBuff);
+  arr.add(palette.name.c_str());
   arr.printTo(buffer, bufferSize);
 #if DEBUG
   arr.prettyPrintTo(Serial); Serial.println();

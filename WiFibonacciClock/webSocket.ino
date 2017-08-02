@@ -45,76 +45,90 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       }
       break;
     case WStype_TEXT:
-      char c1[8], c2[38];
+      {
+        char c1[8], c2[38];
+        bool sync = true;
 #if DEBUG
-      Serial.printf("[%u] get Text: %s\n", num, payload);
+        Serial.printf("[%u] get Text: %s\n", num, payload);
 #endif
-      if (payload[1] == '#') {
-        std::copy(payload + 2, payload + 8, c1);
-        switch (payload[0]) {
-          case 'f': //f#123abc
-            loadFlashLightColor(c1);
-            break;
-          case 'p': //p#123abc
-            loadPulseColor(c1);
-            break;
+        if (payload[1] == '#') {
+          std::copy(payload + 2, payload + 8, c1);
+          switch (payload[0]) {
+            case 'f': //f#123abc
+              loadFlashLightColor(c1);
+              break;
+            case 'p': //p#123abc
+              loadPulseColor(c1);
+              break;
+          }
+        } else {
+          switch (payload[0]) {
+            case 'a': //amondrian.json
+              std::copy(payload + 1, payload + 23, c2); //file name is limited to 32 chars, /palettes/ + file name, i.e. file name is limited to 22 chars
+              setNextFileName(c2);
+              sync = false;
+              break;
+            case 'b': //b0001
+              std::copy(payload + 1, payload + 5, c1);
+              loadBrightness(atoi(c1));
+              break;
+            case 'c': //c["ffffff","ff0a0a","f8de00","0a0aff"]
+              std::copy(payload + 1, payload + 38, c2);
+              c2[37] = (char)0;
+              processPalette(num, c2);
+              break;
+            case 'd': //d01
+              std::copy(payload + 1, payload + 3, c1);
+              deletePalette(atoi(c1));
+              break;
+            case 'e': //e...(settings json)
+//TODO
+              break;
+            case 'f': //f
+              formatAndReset();
+              break;
+            case 'g': //g0008
+              std::copy(payload + 1, payload + 5, c1);
+              loadRandomEase(atoi(c1));
+              break;
+            case 'j': //j0008
+              std::copy(payload + 1, payload + 5, c1);
+              loadRandomDelay(atoi(c1));
+              break;
+            case 'l': //l01
+              std::copy(payload + 1, payload + 3, c1);
+              loadPalette(atoi(c1));
+              break;
+            case 'm': //m2
+              std::copy(payload + 1, payload + 2, c1);
+              loadMode(atoi(c1));
+              break;
+            case 'p': //p0008
+              std::copy(payload + 1, payload + 5, c1);
+              loadPulseDelay(atoi(c1));
+              break;
+            case 'r': //r0008
+              std::copy(payload + 1, payload + 5, c1);
+              loadRainbowDelay(atoi(c1));
+              break;
+            case 't': //tFeb 06 200901:04:05
+              std::copy(payload + 1, payload + 12, c2); //date: Feb 06 2009
+              std::copy(payload + 12, payload + 20, c1); //time: 01:04:05
+              loadDateTime(c2, c1);
+              break;
+            default:
+              sync = false;
+              break;
+          }
         }
-      } else {
-        switch (payload[0]) {
-          case 'a': //amondrian.json
-            std::copy(payload + 1, payload + 38, c2); //TODO check what is the maximum length for the file name
-            setNextFileName(c2);
-            break;
-          case 'b': //b0001
-            std::copy(payload + 1, payload + 5, c1);
-            loadBrightness(atoi(c1));
-            break;
-          case 'c': //c["ffffff","ff0a0a","f8de00","0a0aff"]
-            std::copy(payload + 1, payload + 38, c2);
-            c2[37] = (char)0;
-            processPalette(num, c2);
-            break;
-          case 'd': //d01
-            std::copy(payload + 1, payload + 3, c1);
-            deletePalette(atoi(c1));
-            break;
-          case 'g': //g0008
-            std::copy(payload + 1, payload + 5, c1);
-            loadRandomEase(atoi(c1));
-            break;
-          case 'j': //j0008
-            std::copy(payload + 1, payload + 5, c1);
-            loadRandomDelay(atoi(c1));
-            break;
-          case 'l': //l01
-            std::copy(payload + 1, payload + 3, c1);
-            loadPalette(atoi(c1));
-            break;
-          case 'm': //m2
-            std::copy(payload + 1, payload + 2, c1);
-            loadMode(atoi(c1));
-            break;
-          case 'p': //p0008
-            std::copy(payload + 1, payload + 5, c1);
-            loadPulseDelay(atoi(c1));
-            break;
-          case 'r': //r0008
-            std::copy(payload + 1, payload + 5, c1);
-            loadRainbowDelay(atoi(c1));
-            break;
-          case 't': //tFeb 06 200901:04:05
-            std::copy(payload + 1, payload + 12, c2); //date: Feb 06 2009
-            std::copy(payload + 12, payload + 20, c1); //time: 01:04:05
-            loadDateTime(c2, c1);
-            break;
-        }
+        if (sync) sendSettings(-1); //sync all clients
+        break;
       }
-      break;
     case WStype_BIN:
 #if DEBUG
       hexdump(payload, length);
 #endif
-      writeBinFile(_receivedFileName, payload, length);
+      Serial.printf("[%u] BIN Not supported.", num);
       break;
 #if DEBUG
     case WStype_ERROR:
@@ -135,24 +149,36 @@ void sendContent(uint8_t num) {
 }
 
 void sendPalettes(uint8_t num) {
-  char buffer[74]; // 37 + filename length //TODO check what is the maximum length for the file name
   for(std::vector<Palette>::iterator it = _palettesV.begin(); it != _palettesV.end(); ++it) {
-    printPaletteJsonTo(*it, buffer, sizeof(buffer));
-    _webSocket.sendTXT(num, buffer);
+    sendPalette(num, *it);
   }
+}
+
+void sendPalette(uint8_t num, Palette palette) {
+  char buffer[59]; // 37 (palette length) + 22 (filename length)
+  printPaletteJsonTo(palette, buffer, sizeof(buffer));
+  sendOrBroadcastTXT(num, buffer);
 }
 
 void sendSettings(uint8_t num) {
   char buffer[195];
   printSettingsJsonTo(buffer, sizeof(buffer));
-  _webSocket.sendTXT(num, buffer);
+  sendOrBroadcastTXT(num, buffer);
+}
+
+void sendOrBroadcastTXT(uint8_t num, char* buffer) {
+  if (num < 0) {
+    _webSocket.broadcastTXT(buffer);
+  } else {
+    _webSocket.sendTXT(num, buffer);
+  }
 }
 
 void processPalette(uint8_t num, char* palette) {
   String content = palette;
   if (writePalette(_receivedFileName, content) && loadPaletteJson(palette, getBaseName(_receivedFileName))) {
-    _webSocket.sendTXT(num, "o");
     refreshIfModeIs(CLOCK_MODE);
+    sendPalette(-1, _palettesV.back()); //sync all clients
   } else {
     _webSocket.sendTXT(num, "e");
   }

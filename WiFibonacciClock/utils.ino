@@ -28,3 +28,9 @@ void decToHex(uint32_t dec, char* buffer, size_t bufferSize) {
   while (hexString.length() < bufferSize - 1) hexString = "0" + hexString;
   hexString.toCharArray(buffer, bufferSize);
 }
+
+void formatAndReset(void) {
+  format();
+  ESP.reset();
+}
+

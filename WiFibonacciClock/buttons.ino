@@ -28,7 +28,10 @@ bool debounce(int pin) {
     if (reading != _currentButtonState[pin]) {
       _currentButtonState[pin] = reading;
       ret = reading;
-      if (canChangeBrightness(pin) && !reading) switchLedStripStatus();
+      if (canChangeBrightness(pin) && !reading) {
+        switchLedStripStatus();
+        sendSettings(-1); //Sync all clients
+      }
 #if DEBUG
       Serial.print(F("Button ")); Serial.print(pin); Serial.print(F(" changed to ")); Serial.println(reading); 
 #endif
@@ -50,6 +53,7 @@ void handleButtons(void) {
   } else
   if (debounce(MODE_BUTTON)) {
     loadMode(_settings.mode + 1);
+    sendSettings(-1); //Sync all clients
   }
 }
 

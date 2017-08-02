@@ -56,7 +56,7 @@
 	<body>
 		<!-- extract:body.html -->
 		<header>
-			<h1>WiFibonacci Clock Settings</h1><!-- a,b,c,d,e,f,g,h,i,j,k,l,m,p,r,s,t -->
+			<h1>WiFibonacci Clock Settings</h1><!-- a,b,c,d,e,f,g,h,i,j,k,l,m,n,p,r,s,t -->
 		</header>
 		<section>
 			<form>
@@ -78,7 +78,7 @@
 					<div class="h"><span>off</span><span>hours</span><span>minutes</span><span>both</span></div>
 					<div id="l"></div>
 					Upload palette:<br>
-					<input type="file" name="i"> <input type="button" onclick="q(i)" value="upload">
+					<input type="file" name="i"> <input type="button" onclick="q(i,'c',1)" value="upload">
 				</fieldset>
 				<fieldset>
 					<legend>Rainbow</legend>
@@ -86,8 +86,8 @@
 				</fieldset>
 				<fieldset>
 					<legend>Random</legend>
-					Ease (ms): <input name="g" type="range" min="1" max="100" oninput="y(this,h,'g')"> <input type="number" name="h" min="1" max="100" oninput="y(this,g,'g')"><br>
-					Delay (ms): <input name="j" type="range" min="1" max="9999" oninput="y(this,k,'j')"> <input type="number" name="k" min="1" max="9999" oninput="y(this,j,'j')">
+					Delay (ms): <input name="j" type="range" min="1" max="9999" oninput="y(this,k,'j')"> <input type="number" name="k" min="1" max="9999" oninput="y(this,j,'j')"><br>
+					Ease (ms): <input name="g" type="range" min="1" max="100" oninput="y(this,h,'g')"> <input type="number" name="h" min="1" max="100" oninput="y(this,g,'g')">
 				</fieldset>
 				<fieldset>
 					<legend>Pulse</legend>
@@ -98,6 +98,12 @@
 					<legend>Constant light</legend>
 					Color: <input name="f" type="color" oninput="z(this,'f')">
 				</fieldset>
+				<fieldset>
+					<legend>Settings</legend>
+					<input type="button" onclick="dl()" value="Download settings"> <input type="button" onclick="rl()" value="Restore factory settings"><br>
+					Load file:<br>
+					<input type="file" name="n"> <input type="button" onclick="q(n,'e')" value="load">
+				</fieldset>
 			</form>
 		</section>
 		<footer>
@@ -106,12 +112,62 @@
 		<!-- endextract -->
 		<script>
 			/* extract:script.js */
-			// Keep in mind that anything defined inside this extracted section will live in the scope of _w.onmessage function. Remember to publish whatever needs to be published.
-			window.m = function(i) {
+
+			/** Keep in mind that anything defined inside this extracted section will live in the scope of _w.onmessage function. Remember to publish whatever needs to be published. **/
+			
+			/*
+			* Downloads the current settings as a JSON file
+			*/
+			window.dl = function () {
+				data = {
+					mode: _f.m.value * 1,
+					brightness: _f.b.value * 1,
+					palette: n(document.querySelectorAll('input[name=l]:checked')[0]) * 1,
+					flashLightColor: _f.f.value.replace(/#/,''),
+					rainbowDelay: _f.r.value * 1,
+					pulse: {
+						color: _f.p.value.replace(/#/,''),
+						delay: _f.d.value * 1
+					},
+					random: {
+						ease: _f.g.value * 1,
+						delay: _f.j.value * 1
+					}
+				};
+				var a = document.createElement('a');
+				a.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data)));
+				a.setAttribute('download', 'settings.json');
+				a.style.display = 'none';
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+			};
+
+			/*
+			* Ask for confirmation, sends a 'factory settings' message and reloads the page
+			*/
+			window.rl = function () {
+				if (confirm('Are you sure?')) {
+					zz('f');
+					location.reload();
+				}
+			};
+
+			/*
+			* Selects the palette at a given index
+			* @param {number} i Index of the palette to be selected
+			*/
+			window.m = function (i) {
 				var l = _f.l[i] ? _f.l[i] : _f.l;
 				l.checked = 1;
 			};
-			window.n = function(a) {
+
+			/*
+			* Gives the index of current node in the list
+			* @param {Object} a DOM anchor node
+			* @returns {string} two digis formatted index
+			*/
+			window.n = function (a) {
 				var li = a.parentNode,
 					i = 0;
 				while (li.previousElementSibling) {
@@ -120,7 +176,34 @@
 				}
 				return v(i);
 			};
-			window.o = function(arr) {
+
+			/*
+			* Loads the settings to the UI
+			* @param {Object} obj Plane object containing the settings
+			*/
+			window.o = function (obj) {
+				_f.b.value = obj.brightness;
+				_f.c.value = _f.b.value;
+				_f.d.value = obj.pulse.delay;
+				_f.e.value = _f.d.value;
+				_f.f.value = '#' + obj.flashLightColor;
+				_f.g.value = obj.random.ease;
+				_f.h.value = _f.g.value;
+				_f.j.value = obj.random.delay;
+				_f.k.value = _f.j.value;
+				m(obj.palette);
+				_f.m.value = obj.mode;
+				_f.p.value = '#' + obj.pulse.color;
+				_f.r.value = obj.rainbowDelay;
+				_f.s.value = _f.r.value;
+				_f.t.value = obj.dateTime;
+			};
+
+			/*
+			* Creates and add a palette element to the UI
+			* @param {string[4]} arr Array containing the four colors that define a palette
+			*/
+			window.oo = function (arr) {
 				var rand = Math.random(),
 					html = '<div><input type="radio" name="l" id="l' + rand + '" onclick="zl(this)"><label for="l' + rand + '">';
 				for (var i = 0; i < 4; i++) html += '<span style="background-color:#' + arr[i] + '"></span>';
@@ -129,34 +212,70 @@
 				html += '</div>';
 				t(s('#l'), html);
 			};
-			window.p = function() {
+
+			/*
+			* Alerts the user that something went wrong
+			*/
+			window.p = function () {
 				alert('Failure');
 			};
-			window.q = function(input) {
+
+			/*
+			* Reads a file as text and sends its content to the websocket server
+			* @param {Object} input DOM input node
+			* @param {string} code Action code
+			* @param {boolean} sendFileName If true a 'file name' message is sent before the file content
+			*/
+			window.q = function (input, code, sendFileName) {
 				var file = input.files[0],
 					fr = new FileReader();
 				fr.onerror = p;
-				fr.onload = function(e) {
-					_c = e.target.result;
-					_a = file.name;
-					zz(_a, 'a');
-					zz(_c, 'c');
+				fr.onload = function (e) {
+					if (sendFileName) {
+						zz(file.name, 'a');	
+					}
+					input.value = '';
+					zz(e.target.result, code);
 				};
 				fr.readAsText(file);
 			};
-			window.u = function(input) {
+
+			/*
+			* Detects if a value is out of boundaries
+			* @param {Object} input DOM input node
+			* @returns {boolean} Returns true if the value is not empty and is within boundaries (when applies), false otherwise
+			*/
+			window.u = function (input) {
 				var val = input.value * 1;
 				return val === '' || input.min && val < input.min * 1 || input.max && val > input.max * 1;
 			};
-			window.v = function(val) {
+
+			/*
+			* Formats a number on two digits (left zero filled)
+			* @param {string|number} val Value to be formatted
+			* @returns {string} formatted number
+			*/
+			window.v = function (val) {
 				return w(val, 2);
 			};
-			window.w = function(val, size) {
+
+			/*
+			* Formats a number to a fixed lenght string filled with zeros on its left
+			* @param {string|number} val Value to be formatted
+			* @param {number} size Size of the resulting string
+			* @returns {string} formatted number
+			*/
+			window.w = function (val, size) {
 				val += '';
 				while (val.length < size) val = '0' + val;
 				return val;
 			};
-			window.x = function(input) {
+
+			/*
+			* Sends a 'date time' message
+			* @param {Object} input DOM input node
+			*/
+			window.x = function (input) {
 				var date = new Date(),
 					hours = v(date.getHours()),
 					minutes = v(date.getMinutes()),
@@ -167,86 +286,112 @@
 				input.value = year + '-' + v(month + 1) + '-' + day + 'T' + hours + ':' + minutes + ':' + seconds; //2009-02-06T01:04:05
 				zz(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month] + ' ' + day + ' ' + year + hours + ':' + minutes + ':' + seconds, 't'); //Feb 06 200901:04:05
 			};
-			window.y = function(input1, input2, code) {
-				if (u(input1)) return;
-				var val = input1.value;
-				input2.value = val;
-				zz(w(val, 4), code);
+
+			/*
+			* Sends a four digit formatted input value
+			* @param {Object} input DOM input node holding the value
+			* @param {string} code Action code
+			*/
+			window.y = function (input, code) {
+				if (u(input)) return;
+				zz(w(input.value, 4), code);
 			};
-			window.z = function(input, code) {
+
+			/*
+			* Sends a message to the websocket server
+			* @param {Object} input DOM input node
+			* @param {string} code Action code
+			*/
+			window.z = function (input, code) {
 				if (u(input)) return;
 				var val = input.value;
 				console.log(code + val);
 				_w.send(code + val);
 			};
-			window.zz = function(val, code) {
+
+			/*
+			* Helps to send a message by value
+			* @param {string|number} val Value to be sent
+			* @param {string} code Action code
+			*/
+			window.zz = function (val, code) {
 				z({value: val}, code);
 			};
-			window.zl = function(input) {
+
+			/*
+			* Sends a 'palette' message
+			* @param {Object} input DOM input node
+			*/
+			window.zl = function (input) {
 				zz(n(input), 'l');
 			};
-			window.zd = function(a) {
-				zz(n(a), 'd');
-				a.parentNode.remove();
-				m(0);
+
+			/*
+			* Sends a 'palette delete' message
+			* @param {Object} input DOM input node
+			*/
+			window.zd = function (input) {
+				zz(n(input), 'd');
 			};
-			window.zm = function(input) {
+
+			/*
+			* Sends a 'mode' message
+			* @param {Object} input DOM input node
+			*/
+			window.zm = function (input) {
 				z(input, 'm');
 			};
 			/* endextract */
+
+			/*
+			* Fetches the DOM node matching the selector
+			* @param {string} selector
+			* @returns {Object} DOM node
+			*/
 			function s(selector) {
 				return document.querySelector(selector);
 			}
+
+			/*
+			* Adds html nodes to an existing DOM container
+			* @param {Object} container DOM node
+			* @param {string} html the html code
+			*/
 			function t(container, html) {
 				var d = document.createElement('div');
 				d.innerHTML = html;
 				while (d.children.length > 0) container.appendChild(d.children[0]);
 			}
-			var _a, _c, _f,
+
+			var _f,
 				_w = new WebSocket('ws://192.168.4.1:81/', ['arduino']);
-			_w.onmessage = function (e) {
+
+			/*
+			* Handles messages comming from the websocket server
+			* @param {Object} e the object containin the message
+			*/
+			_w.onmessage = function (e) {  // 
 				var data = e.data;
-				if (_c) {
-					if (data == 'o') {
-						_c = JSON.parse(_c);
-						_c.push(_a.split('.')[0]);
-						o(_c);
-						_f.i.value = '';
-					} else {
-						p();
+				if (data == 'e') { // Server returned failure
+					p();
+				} else {
+					switch (data[0]) { // Check the first char
+						case '{': // This is a JSON message
+						case '[':
+							var obj = JSON.parse(data);
+							if (typeof obj.mode != 'undefined') { // This is the settings JSON
+								o(obj);
+							} else { // This is a palette JSON
+								oo(obj);
+							}
+							break;
+						case '<': // This is some HTML
+							t(s(data.indexOf('<style>') == 0 ? 'head' : 'body'), data);
+							_f = s('form');
+							break;
+						default:
+							eval(data); // This must be some JS
 					}
-					_c = 0;
-				}
-				switch (data[0]) {
-					case '{':
-					case '[':
-						var json = JSON.parse(data);
-						if (typeof json.mode != 'undefined') {
-							_f.b.value = json.brightness;
-							_f.c.value = _f.b.value;
-							_f.d.value = json.pulse.delay;
-							_f.e.value = _f.d.value;
-							_f.f.value = '#' + json.flashLightColor;
-							_f.g.value = json.random.ease;
-							_f.h.value = _f.g.value;
-							_f.j.value = json.random.delay;
-							_f.k.value = _f.j.value;
-							m(json.palette);
-							_f.m.value = json.mode;
-							_f.p.value = '#' + json.pulse.color;
-							_f.r.value = json.rainbowDelay;
-							_f.s.value = _f.r.value;
-							_f.t.value = json.dateTime;
-						} else { //["ffffff", "ffffff", "ffffff", "ffffff"]
-							o(json);
-						}
-						break;
-					case '<':
-						t(s(data.indexOf('<style>') == 0 ? 'head' : 'body'), data);
-						_f = s('form');
-						break;
-					default:
-						eval(data);
 				}
 			};
 		</script>

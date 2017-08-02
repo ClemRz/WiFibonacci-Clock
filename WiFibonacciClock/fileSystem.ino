@@ -20,34 +20,19 @@
  */
 
 bool readPalettes(void) {
-  bool success = false;
+  bool succeeded = false;
   Dir dir = SPIFFS.openDir(PALETTES_PATH);
   while (dir.next()) {
     File palette = dir.openFile("r");
-    success = success || readFile(palette, loadPaletteJson);
-    palette.close();
-    yield();
+    succeeded = succeeded || readFile(palette, loadPaletteJson);
+    //palette.close(); //TODO
+    //yield();
   }
-  return success;
+  return succeeded;
 }
 
-bool readSettings(void) {
-  bool success = false;
-#if DEBUG
-    Serial.print(F("Opening: "));Serial.println(SETTINGS_FILE_PATH);
-#endif
-  File settings = SPIFFS.open(SETTINGS_FILE_PATH, "r");
-  success = readFile(settings, loadSettingsJson);
-  settings.close();
-  return success;
-}
-
-void writeSettings(void) {
-  
-}
-
-bool writePalette(String name, String json) {
-  return writeTxtFile((String)PALETTES_PATH + '/' + name, json);
+bool writePalette(String fileName, String json) {
+  return writeTxtFile((String)PALETTES_PATH + '/' + fileName, json);
 }
 
 void deletePalette(uint8_t index) {
@@ -58,10 +43,42 @@ void deletePalette(uint8_t index) {
   }
 }
 
-void writeBinFile(String name, uint8_t * bin, size_t length) {
+bool readSettings(void) {
+  bool succeeded = false;
 #if DEBUG
-  Serial.println(F("Not implemented"));
+    Serial.print(F("Opening: "));Serial.println(SETTINGS_FILE_PATH);
 #endif
+  File settings = SPIFFS.open(SETTINGS_FILE_PATH, "r");
+  succeeded = readFile(settings, loadSettingsJson);
+  settings.close();
+  return succeeded;
+}
+
+void writeSettings(void) {
+  
+}
+
+bool readFile(File file, std::function<bool (char* json, String fileName)> callback) {
+  if (file) {
+    String fileName = file.name();
+    size_t fileSize = file.size();
+#if DEBUG
+    Serial.print(F("Reading "));Serial.print(fileSize);Serial.print(F(" bytes from "));Serial.println(fileName);
+#endif
+    if (fileSize <= 1024) {
+      String content = file.readStringUntil('\n');
+      return callback((char*)content.c_str(), getBaseName(fileName));
+#if DEBUG
+    } else {
+      Serial.println(F("file size is too large"));
+#endif
+    }
+#if DEBUG
+  } else {
+    Serial.println(F("file open failed"));
+#endif
+  }
+  return false;
 }
 
 bool writeTxtFile(String path, String content) {
@@ -81,30 +98,6 @@ bool writeTxtFile(String path, String content) {
   return false;
 }
 
-bool readFile(File file, std::function<bool (char* json, String name)> callback) {
-  if (file) {
-    String name = file.name();
-#if DEBUG
-    Serial.print(F("Reading ")); Serial.println(name);
-#endif
-    size_t size = file.size();
-    if (size <= 1024) {
-      std::unique_ptr<char[]> buf(new char[size]);
-      file.readBytes(buf.get(), size);
-      return callback(buf.get(), getBaseName(name));
-#if DEBUG
-    } else {
-      Serial.println(F("file size is too large"));
-#endif
-    }
-#if DEBUG
-  } else {
-    Serial.println(F("file open failed"));
-#endif
-  }
-  return false;
-}
-
 bool deleteFile(String path) {
   if (SPIFFS.remove(path)) {
     return true;
@@ -115,6 +108,10 @@ bool deleteFile(String path) {
 #endif  //DEBUG
   }
   return false;
+}
+
+bool format() {
+  return SPIFFS.format();
 }
 
 String getBaseName(String fileName) {
