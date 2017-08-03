@@ -41,7 +41,7 @@ Plug the clock to the power source
 ### How to use the physical UI
 
  - Push sequentially the Mode button to cycle through the modes
- - Push an maintain pushed the Brightness button to dim down the LEDs. When you reach the lowest intensity, release the button and pushe it again to dim up the LEDs. The opposite happens when you reach the highest intensity.
+ - Push an maintain pushed the Brightness button to dim down the LEDs. When you reach the lowest intensity, release the button and push it again to dim up the LEDs. The opposite happens when you reach the highest intensity.
  - Push the reset button to perform a soft reset. This will not erase the last settings saved in memory nor the palettes you might have uploaded to the clock.
  
 ### What should I do if the clock is not responding / gets bricked
