@@ -79,7 +79,9 @@ Thanks!
 ## Screenshots
  
  Virtual UI:
+ 
  ![Screenshot](res/client.png)
  
  Electronic design:
+ 
  ![Circuit](res/circuit.png)
