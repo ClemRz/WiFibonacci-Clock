@@ -60,7 +60,15 @@ The HTML UI is embedded inside the ESP's firmware but you can modify it followin
 
  1. Install `npm` and `grunt` (documentation: [https://gruntjs.com/](https://gruntjs.com/))
  2. Install the dependencies, run in a terminal at the root of the project: `nom install`
- 3. Modify 
+ 3. Modify client.html as you wish. Keep in mind that the resulting payload.html should be less than 3,000 characters
+ 4. Run `grunt` in the same terminal to generate the 4 parts needed in the `generated` folder. Copy their content and past it in WiFibonacciClock.ino as described below:
+ 
+   - payload.html -> `UI_HTTP_PAYLOAD`
+   - script.js -> `UI_JS_SCRIPT`
+   - body.html -> `UI_HTML_BODY`
+   - style.html -> `UI_HTML_STYLE`
+   
+ 5. Save and upload your fimware to the ESP. `Rx`, `Tx` and `GND` are exposed via male headers as well as a programing rocker switch.
  
 ## Hardware design
  
