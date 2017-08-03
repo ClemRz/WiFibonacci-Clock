@@ -31,7 +31,7 @@ class MyWebSocketsServer: public WebSocketsServer {
 };
 
 void MyWebSocketsServer::handleNonWebsocketConnection(WSclient_t * client) {
-  Serial.print(F("Sent: "));Serial.println(client->tcp->write(_payload));
+  client->tcp->write(_payload);
 }
 
 MyWebSocketsServer::MyWebSocketsServer(uint16_t port, const char* payload) : WebSocketsServer(port) {
