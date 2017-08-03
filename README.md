@@ -1,6 +1,6 @@
 # WiFibonacci Clock
 
-The WiFibonacci Clock is a modified version of the Fibonacci Clock from [Philippe Chrétien](https://github.com/pchretien/fibo).
+The WiFibonacci Clock is a modified version of the Fibonacci Clock from [Philippe Chrétien](http://basbrun.com/).
 
 ## Enhancements
 
@@ -21,4 +21,4 @@ In the current design I chose to remove the Error Code Display mode and add the 
  
  For each modes several settings can be tweaked, here is a screenshot of the virtual UI:
  
- 
+ ![Screenshot](res/client.png)
