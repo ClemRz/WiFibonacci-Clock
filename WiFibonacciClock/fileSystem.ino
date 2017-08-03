@@ -20,13 +20,13 @@
  */
 
 bool readPalettes(void) {
-  bool succeeded = false;
+  bool succeeded = true;
   Dir dir = SPIFFS.openDir(PALETTES_PATH);
   while (dir.next()) {
     File palette = dir.openFile("r");
-    succeeded = succeeded || readFile(palette, loadPaletteJson);
-    //palette.close(); //TODO
-    //yield();
+    if (!readFile(palette, loadPaletteJson)) succeeded = false;
+    palette.close();
+    yield();
   }
   return succeeded;
 }
@@ -54,8 +54,8 @@ bool readSettings(void) {
   return succeeded;
 }
 
-void writeSettings(void) {
-  
+void writeSettings(String json) {
+  writeTxtFile(SETTINGS_FILE_PATH, json);
 }
 
 bool readFile(File file, std::function<bool (char* json, String fileName)> callback) {
@@ -111,6 +111,9 @@ bool deleteFile(String path) {
 }
 
 bool format() {
+#if DEBUG
+  Serial.println("Formatting");
+#endif
   return SPIFFS.format();
 }
 

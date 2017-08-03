@@ -76,15 +76,15 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
               std::copy(payload + 1, payload + 38, c2);
               c2[37] = (char)0;
               processPalette(num, c2);
+              sync = false;
               break;
             case 'd': //d01
               std::copy(payload + 1, payload + 3, c1);
               deletePalette(atoi(c1));
+              sendOrBroadcastTXT(-1, (char*)payload);
               break;
-            case 'e': //e...(settings json)
-//TODO
-              break;
-            case 'f': //f
+            case 'f': //f0
+              turnOffLedStrip();
               formatAndReset();
               break;
             case 'g': //g0008
@@ -116,6 +116,9 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
               std::copy(payload + 12, payload + 20, c1); //time: 01:04:05
               loadDateTime(c2, c1);
               break;
+            case '{': //{...(settings json)
+              loadSettingsJson((char*)payload, "");
+              break;
             default:
               sync = false;
               break;
@@ -142,42 +145,43 @@ void setNextFileName(const char* name) {
   _receivedFileName = name;
 }
 
-void sendContent(uint8_t num) {
+void sendContent(int num) {
   sendOrBroadcastTXT(num, UI_JS_SCRIPT);
   sendOrBroadcastTXT(num, UI_HTML_BODY);
   sendOrBroadcastTXT(num, UI_HTML_STYLE);
 }
 
-void sendPalettes(uint8_t num) {
+void sendPalettes(int num) {
   for(std::vector<Palette>::iterator it = _palettesV.begin(); it != _palettesV.end(); ++it) {
     sendPalette(num, *it);
   }
 }
 
-void sendPalette(uint8_t num, Palette palette) {
+void sendPalette(int num, Palette palette) {
   char buffer[59]; // 37 (palette length) + 22 (filename length)
   printPaletteJsonTo(palette, buffer, sizeof(buffer));
   sendOrBroadcastTXT(num, buffer);
 }
 
-void sendSettings(uint8_t num) {
+void sendSettings(int num) {
   char buffer[195];
   printSettingsJsonTo(buffer, sizeof(buffer));
   sendOrBroadcastTXT(num, buffer);
 }
 
-void sendOrBroadcastTXT(uint8_t num, char* buffer) {
+void sendOrBroadcastTXT(int num, char* buffer) {
 #if DEBUG
-  Serial.println(num < -1 ? "SendTXT" : "BroadcastTXT");
+  Serial.printf(num < 0 ? "[ ] BroadcastTXT" : "[%u] SendTXT", num);Serial.println();
 #endif
   if (num < 0) {
+    if (buffer[0] == '{') writeSettings(buffer);
     _webSocket.broadcastTXT(buffer);
   } else {
     _webSocket.sendTXT(num, buffer);
   }
 }
 
-void processPalette(uint8_t num, char* palette) {
+void processPalette(int num, char* palette) {
   String content = palette;
   if (writePalette(_receivedFileName, content) && loadPaletteJson(palette, getBaseName(_receivedFileName))) {
     refreshIfModeIs(CLOCK_MODE);

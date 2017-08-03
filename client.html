@@ -53,6 +53,12 @@
 			#l a {
 				margin-left:5px;
 			}
+			.help {
+				font-size: 0.8rem;
+				font-style: italic;
+				line-height: 1em;
+				margin: 10px auto;
+			}
 		</style>
 <!-- endextract -->
 	</head>
@@ -103,11 +109,15 @@
 				</fieldset>
 				<fieldset>
 					<legend>Settings</legend>
-					<input type="button" onclick="dl()" value="Download settings"> <input type="button" onclick="rl()" value="Restore factory settings"><br>
+					<input type="button" onclick="dl()" value="Download settings"> <input type="button" onclick="rl(this)" value="Restore factory settings"><br>
 					Load file:<br>
-					<input type="file" name="n"> <input type="button" onclick="q(n,'e')" value="load">
+					<input type="file" name="n"> <input type="button" onclick="q(n,'')" value="load">
 				</fieldset>
 			</form>
+		</section>
+		<section class="help">
+			If your WiFibonacci Clock briks, do a hard reset by maintaining the mode button pushed and then push the reset button.<br>
+			Warning: this will delete all settings and palettes.
 		</section>
 		<footer>
 			&copy; 2017 Clément Ronzon
@@ -144,16 +154,6 @@
 				document.body.appendChild(a);
 				a.click();
 				document.body.removeChild(a);
-			};
-
-			/*
-			* Ask for confirmation, sends a 'factory settings' message and reloads the page
-			*/
-			window.rl = function () {
-				if (confirm('Are you sure?')) {
-					zz('f');
-					location.reload();
-				}
 			};
 
 			/*
@@ -244,13 +244,24 @@
 			};
 
 			/*
+			* Ask for confirmation, sends a 'factory settings' message and reloads the page
+			*/
+			window.rl = function (input) {
+				if (confirm(input.value + '. Are you sure?')) {
+					zz('0', 'f');
+					alert('Uplug and replug your WiFibonacci Clock.');
+					location.reload();
+				}
+			};
+
+			/*
 			* Detects if a value is out of boundaries
 			* @param {Object} input DOM input node
-			* @returns {boolean} Returns true if the value is not empty and is within boundaries (when applies), false otherwise
+			* @returns {boolean} Returns false if the value is not empty and is within boundaries (when applies), false otherwise
 			*/
 			window.u = function (input) {
-				var val = input.value * 1;
-				return val === '' || input.min && val < input.min * 1 || input.max && val > input.max * 1;
+				var val = input.value;
+				return val === '' || input.min && val * 1 < input.min * 1 || input.max && val * 1 > input.max * 1;
 			};
 
 			/*
@@ -387,18 +398,19 @@
 					p();
 				} else {
 					switch (data[0]) { // Check the first char
-						case '{': // This is a JSON message
-						case '[':
-							var obj = JSON.parse(data);
-							if (typeof obj.mode != 'undefined') { // This is the settings JSON
-								o(obj);
-							} else { // This is a palette JSON
-								oo(obj);
-							}
+						case '{': // This is a setting JSON
+							o(JSON.parse(data));
+							break;
+						case '[': // This is a palette JSON
+							oo(JSON.parse(data));
 							break;
 						case '<': // This is some HTML
 							t(s(data.indexOf('<style>') == 0 ? 'head' : 'body'), data);
 							_f = s('form');
+							break;
+						case 'd': // A palette has been deleted
+							var i = data.slice(1) * 1 + 1;
+							s('#l div:nth-child(' + i + ')').remove();
 							break;
 						default:
 							eval(data); // This must be some JS

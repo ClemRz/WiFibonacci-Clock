@@ -31,6 +31,9 @@ void decToHex(uint32_t dec, char* buffer, size_t bufferSize) {
 
 void formatAndReset(void) {
   format();
+#if DEBUG
+  Serial.println("Resetting");
+#endif
   ESP.reset();
 }
 

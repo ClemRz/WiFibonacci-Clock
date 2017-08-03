@@ -99,6 +99,7 @@ void initWebSocket(void) {
 
 void initFS(void) {
   SPIFFS.begin();
+  if (!digitalRead(MODE_BUTTON)) format(); //Hard reset
   loadDefaultPalette();
   if (!readPalettes()) {
 #if DEBUG

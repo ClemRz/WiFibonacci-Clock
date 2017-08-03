@@ -128,6 +128,11 @@ void pulse(uint32_t color, uint32_t delayMs) {
   timerMs(delayMs);
 }
 
+void turnOffLedStrip(void) {
+  for (uint8_t i= 0; i < CLOCK_PIXELS; i++) setPixel(i, 0);
+  _ledStrip.show();
+}
+
 void refreshIfModeIs(uint8_t mode) {
   if (_settings.mode == mode) _refreshLedStrip = true;
 }
@@ -188,7 +193,10 @@ void loadPulseColor(char* hexColor) {
 
 void loadBrightness(uint8_t brightness) {
   _settings.brightness = brightness;
-  if (noBrightnessMode(_settings.mode)) return;
+  if (noBrightnessMode(_settings.mode)) {
+    _brightnessBackup = brightness;
+    return;
+  }
   applyCorrectedBrightness();
 }
 

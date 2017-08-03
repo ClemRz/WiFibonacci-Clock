@@ -43,7 +43,7 @@ module.exports = function(grunt) {
                 }]
             },
             after: {
-                src: './generated/*',
+                src: './generated/*.*',
                 dest: './generated/',
                 replacements: [{
                     from: /console\.[a-z]+\([^\)]*\)(;|,)?/g,
