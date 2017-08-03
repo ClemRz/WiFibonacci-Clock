@@ -1,6 +1,6 @@
 # WiFibonacci Clock
 
-The WiFibonacci Clock is a modified version of the Fibonacci Clock from [Philippe Chrétien](http://basbrun.com/).
+The WiFibonacci Clock is a modified version of the awesome Fibonacci Clock designed by [Philippe Chrétien](http://basbrun.com/).
 
 ## Enhancements
 
@@ -19,6 +19,67 @@ In the current design I chose to remove the Error Code Display mode and add the 
  - Pulse
  - Constant Light
  
- For each modes several settings can be tweaked, here is a screenshot of the virtual UI:
+For each modes several settings can be tweaked, see a screenshot of the virtual UI at the bottom of this page.
+
+There is only two momentary buttons in my design:
+
+ - Mode button
+ - Brightness button
  
+ The brightness is also an enhancement. The time adjustment can be done via the virtual UI.
+
+## How to use it
+
+Plug the clock to the power source
+
+### How to access the virtual UI
+
+ 1. With you smart-phone, tablet, computer, connect to the wifi signal named `WiFibonacciClk`, password is `fibonacci`.
+ 2. Open a browser and go to [http://192.168.4.1:81](http://192.168.4.1:81)
+ 3. The setings page should load by itself
+
+### How to use the physical UI
+
+ - Push sequentially the Mode button to cycle through the modes
+ - Push an maintain pushed the Brightness button to dim down the LEDs. When you reach the lowest intensity, release the button and pushe it again to dim up the LEDs. The opposite happens when you reach the highest intensity.
+ - Push the reset button to perform a soft reset. This will not erase the last settings saved in memory nor the palettes you might have uploaded to the clock.
+ 
+### What should I do if the clock is not responding / gets bricked
+ 
+If the clock gets stuck and keeps stuck or if you want to wipe out any custom settings and palettes there are two ways:
+ - Enter the virtual UI and press the Reset Factory Settings button
+ - Maintain the Mode button pressed and press the reset button
+
+Caution: this will definitely erase the previous settings and the palettes you might have uploaded to the clock.
+ 
+## Software design
+ 
+The ESP's firmware is quite self explanatory. You will be able to get the `ino` files at the root of this repo.
+
+The HTML UI is embedded inside the ESP's firmware but you can modify it following those simple steps:
+
+ 1. Install `npm` and `grunt` (documentation: [https://gruntjs.com/](https://gruntjs.com/))
+ 2. Install the dependencies, run in a terminal at the root of the project: `nom install`
+ 3. Modify 
+ 
+## Hardware design
+ 
+I used [Fritzing](http://fritzing.org) to draw the electronic diagram (see breadboard below).
+
+I followed the instructions provided by Philippe to build the enclosure.
+
+## Feel free
+
+If you want to reproduce, modify or enhance my variation of this fabulous clock, feel free to do it respecting the licence enclosed in this repo.
+
+If you detect a bug or a possible enhancement to the code, feel free to send me a merge request, open an issue or leave a comment!
+
+Thanks!
+
+## Screenshots
+ 
+ Virtual UI:
  ![Screenshot](res/client.png)
+ 
+ Electronic design:
+ ![Circuit](res/circuit.png)
