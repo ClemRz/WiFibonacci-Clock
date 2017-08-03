@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-		<!-- extract:style.html -->
+<!-- extract:style.html -->
 		<style>
 			html, body {
 				font-family: Arial;
@@ -14,6 +14,9 @@
 				width: 100%;
 				line-height: 2em;
 				box-sizing: border-box;
+			}
+			body.disabled {
+				background-color: #ccc;
 			}
 			section {
 				width: 350px;
@@ -51,10 +54,10 @@
 				margin-left:5px;
 			}
 		</style>
-		<!-- endextract -->
+<!-- endextract -->
 	</head>
 	<body>
-		<!-- extract:body.html -->
+<!-- extract:body.html -->
 		<header>
 			<h1>WiFibonacci Clock Settings</h1><!-- a,b,c,d,e,f,g,h,i,j,k,l,m,n,p,r,s,t -->
 		</header>
@@ -68,7 +71,7 @@
 					<input type="radio" name="m" id="m3" onclick="zm(this)" value="3"><label for="m3">Random</label><br>
 					<input type="radio" name="m" id="m4" onclick="zm(this)" value="4"><label for="m4">Pulse</label><br>
 					<input type="radio" name="m" id="m5" onclick="zm(this)" value="5"><label for="m5">Constant Light</label><br>
-					Brightness: <input name="b" type="range" min="1" max="255" oninput="y(this,c,'b')"> <input type="number" name="c" min="1" max="255" oninput="y(this,b,'b')">
+					Brightness: <input name="b" type="range" min="1" max="255" oninput="y(this,'b')"> <input type="number" name="c" min="1" max="255" oninput="y(this,'b')">
 				</fieldset>
 				<fieldset>
 					<legend>Clock</legend>
@@ -82,17 +85,17 @@
 				</fieldset>
 				<fieldset>
 					<legend>Rainbow</legend>
-					Delay (ms): <input name="r" type="range" min="1" max="100" oninput="y(this,s,'r')"> <input type="number" name="s" min="1" max="100" oninput="y(this,r,'r')">
+					Delay (ms): <input name="r" type="range" min="1" max="100" oninput="y(this,'r')"> <input type="number" name="s" min="1" max="100" oninput="y(this,'r')">
 				</fieldset>
 				<fieldset>
 					<legend>Random</legend>
-					Delay (ms): <input name="j" type="range" min="1" max="9999" oninput="y(this,k,'j')"> <input type="number" name="k" min="1" max="9999" oninput="y(this,j,'j')"><br>
-					Ease (ms): <input name="g" type="range" min="1" max="100" oninput="y(this,h,'g')"> <input type="number" name="h" min="1" max="100" oninput="y(this,g,'g')">
+					Delay (ms): <input name="j" type="range" min="1" max="9999" oninput="y(this,'j')"> <input type="number" name="k" min="1" max="9999" oninput="y(this,'j')"><br>
+					Ease (ms): <input name="g" type="range" min="1" max="100" oninput="y(this,'g')"> <input type="number" name="h" min="1" max="100" oninput="y(this,'g')">
 				</fieldset>
 				<fieldset>
 					<legend>Pulse</legend>
 					Color: <input name="p" type="color" oninput="z(this,'p')"><br>
-					Delay (ms): <input name="d" type="range" min="1" max="100" oninput="y(this,e,'p')"> <input type="number" name="e" min="1" max="100" oninput="y(this,d,'p')">
+					Delay (ms): <input name="d" type="range" min="1" max="100" oninput="y(this,'p')"> <input type="number" name="e" min="1" max="100" oninput="y(this,'p')">
 				</fieldset>
 				<fieldset>
 					<legend>Constant light</legend>
@@ -109,9 +112,9 @@
 		<footer>
 			&copy; 2017 Clément Ronzon
 		</footer>
-		<!-- endextract -->
+<!-- endextract -->
 		<script>
-			/* extract:script.js */
+/* extract:script.js */
 
 			/** Keep in mind that anything defined inside this extracted section will live in the scope of _w.onmessage function. Remember to publish whatever needs to be published. **/
 			
@@ -122,7 +125,7 @@
 				data = {
 					mode: _f.m.value * 1,
 					brightness: _f.b.value * 1,
-					palette: n(document.querySelectorAll('input[name=l]:checked')[0]) * 1,
+					palette: n(sa('input[name=l]:checked')[0]) * 1,
 					flashLightColor: _f.f.value.replace(/#/,''),
 					rainbowDelay: _f.r.value * 1,
 					pulse: {
@@ -341,7 +344,7 @@
 			window.zm = function (input) {
 				z(input, 'm');
 			};
-			/* endextract */
+/* endextract */
 
 			/*
 			* Fetches the DOM node matching the selector
@@ -350,6 +353,15 @@
 			*/
 			function s(selector) {
 				return document.querySelector(selector);
+			}
+
+			/*
+			* Fetches all DOM nodes matching the selector
+			* @param {string} selector
+			* @returns {Object[]} DOM nodes
+			*/
+			function sa(selector) {
+				return document.querySelectorAll(selector);
 			}
 
 			/*
@@ -363,15 +375,14 @@
 				while (d.children.length > 0) container.appendChild(d.children[0]);
 			}
 
-			var _f,
-				_w = new WebSocket('ws://192.168.4.1:81/', ['arduino']);
+			var _f, _w = new WebSocket('ws://192.168.4.1:81/', ['arduino']);
 
 			/*
 			* Handles messages comming from the websocket server
-			* @param {Object} e the object containin the message
+			* @param {Object} messageEvent the object containing the message
 			*/
-			_w.onmessage = function (e) {  // 
-				var data = e.data;
+			_w.onmessage = function (messageEvent) {
+				var data = messageEvent.data;
 				if (data == 'e') { // Server returned failure
 					p();
 				} else {
@@ -393,6 +404,29 @@
 							eval(data); // This must be some JS
 					}
 				}
+			};
+
+			/*
+			* Handles errors comming from the websocket server
+			* @param {Object} errorEvent the object containing the message
+			*/
+			_w.onerror = function (errorEvent) {
+				console.log('errorEvent: ');
+				console.log(errorEvent);
+			};
+
+			/*
+			* Handles when the websocket server closes
+			* @param {Object} closeEvent the object containing the message
+			*/
+			_w.onclose = function (closeEvent) {
+				console.log('closeEvent: ');
+				console.log(closeEvent);
+				alert('Wifi signal interrupted');
+				s('body').className = 'disabled';
+				sa('body input').forEach(function (input) {
+					input.disabled = 1;
+				});
 			};
 		</script>
 	</body>

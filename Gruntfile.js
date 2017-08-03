@@ -84,6 +84,14 @@ module.exports = function(grunt) {
                 }
             }
         },
+        copy: {
+            default: {
+                files: [{
+                    src: './generated/payload.html',
+                    dest: './generated/test/payload.html'
+                }]
+            }
+        },
         file_append: {
             default: {
                 files: [{
@@ -100,7 +108,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-file-append');
     grunt.loadNpmTasks('grunt-regex-extract');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-copy');
 
-    grunt.registerTask('default', ['regex_extract', 'replace:before', 'htmlcompressor', 'uglify', 'replace:after', 'file_append']);
+    grunt.registerTask('default', ['regex_extract', 'replace:before', 'htmlcompressor', 'uglify', 'copy', 'replace:after', 'file_append']);
 
 };

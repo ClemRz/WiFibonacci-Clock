@@ -143,9 +143,9 @@ void setNextFileName(const char* name) {
 }
 
 void sendContent(uint8_t num) {
-  _webSocket.sendTXT(num, UI_JS_SCRIPT);
-  _webSocket.sendTXT(num, UI_HTML_BODY);
-  _webSocket.sendTXT(num, UI_HTML_STYLE);
+  sendOrBroadcastTXT(num, UI_JS_SCRIPT);
+  sendOrBroadcastTXT(num, UI_HTML_BODY);
+  sendOrBroadcastTXT(num, UI_HTML_STYLE);
 }
 
 void sendPalettes(uint8_t num) {
@@ -167,6 +167,9 @@ void sendSettings(uint8_t num) {
 }
 
 void sendOrBroadcastTXT(uint8_t num, char* buffer) {
+#if DEBUG
+  Serial.println(num < -1 ? "SendTXT" : "BroadcastTXT");
+#endif
   if (num < 0) {
     _webSocket.broadcastTXT(buffer);
   } else {
@@ -180,7 +183,7 @@ void processPalette(uint8_t num, char* palette) {
     refreshIfModeIs(CLOCK_MODE);
     sendPalette(-1, _palettesV.back()); //sync all clients
   } else {
-    _webSocket.sendTXT(num, "e");
+    sendOrBroadcastTXT(num, "e");
   }
 }
 
