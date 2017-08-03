@@ -19,7 +19,7 @@ In the current design I chose to remove the Error Code Display mode and add the 
  - Pulse
  - Constant Light
  
-For each modes several settings can be tweaked, see a screenshot of the virtual UI at the bottom of this page.
+For each mode, several settings can be tweaked, see a screenshot of the virtual UI at the bottom of this page.
 
 There is only two momentary buttons in my design:
 
