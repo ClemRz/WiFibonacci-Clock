@@ -130,11 +130,11 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 #if DEBUG
     case WStype_BIN:
       hexdump(payload, length);
-      Serial.printf("[%u] BIN Not supported.", num);
+      Serial.printf("[%u] BIN Not supported.\n", num);
       break;
     case WStype_ERROR:
     default:
-      Serial.printf("[%u] WS error.", num);
+      Serial.printf("[%u] WS error.\n", num);
 #endif
   }
 }
@@ -169,7 +169,7 @@ void sendSettings(int num) {
 
 void sendOrBroadcastTXT(int num, char* buffer) {
 #if DEBUG
-  Serial.printf(num < 0 ? "[ ] BroadcastTXT" : "[%u] SendTXT", num);Serial.println();
+  Serial.printf(num < 0 ? "[ ] BroadcastTXT" : "[%u] SendTXT\n", num);
 #endif
   if (num < 0) {
     if (buffer[0] == '{') writeSettings(buffer);

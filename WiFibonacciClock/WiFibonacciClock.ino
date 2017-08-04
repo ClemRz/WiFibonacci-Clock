@@ -43,12 +43,10 @@ using namespace ArduinoJson;
 #define HOUR                      (unsigned int) 60L*MINUTE
 #define DAY                       (unsigned long) 24L*HOUR
 
-/* 
- * ======================================
- *      User defined constants
- * ======================================
-*/
+// Debug
 #define DEBUG                     0
+
+// Wifi
 #define AP_SSID                   "WiFibonacciClk"
 #define AP_PASSWORD               "fibonacci"
 
