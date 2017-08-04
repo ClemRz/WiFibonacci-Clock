@@ -127,13 +127,11 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         if (sync) sendSettings(-1); //sync all clients
         break;
       }
-    case WStype_BIN:
 #if DEBUG
+    case WStype_BIN:
       hexdump(payload, length);
-#endif
       Serial.printf("[%u] BIN Not supported.", num);
       break;
-#if DEBUG
     case WStype_ERROR:
     default:
       Serial.printf("[%u] WS error.", num);
