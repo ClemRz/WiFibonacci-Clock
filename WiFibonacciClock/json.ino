@@ -88,7 +88,7 @@ void printSettingsJsonTo(char* buffer, size_t bufferSize) {
   settings["flashLightColor"] = buff2;
   settings["rainbowDelay"] = (long)_settings.rainbowDelay;
   settings["mode"] = _settings.mode;
-  settings["brightness"] = _settings.brightness;
+  settings["brightness"] = noBrightnessMode(_settings.mode) ? _brightnessBackup : _settings.brightness;
   settings["palette"] = _settings.palette;
   settings["pulse"] = pulse;
   settings["random"] = randm;

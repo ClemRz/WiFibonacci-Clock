@@ -202,10 +202,17 @@ void loadBrightness(uint8_t brightness) {
 
 void backupBrightness(void) {
   _brightnessBackup = _ledStrip.getBrightness();
+#if DEBUG
+  Serial.print(F("Backup brightness: "));Serial.println(_brightnessBackup);
+#endif
 }
 
 void restoreBrightness(void) {
   _ledStrip.setBrightness(_brightnessBackup);
+  _settings.brightness = _brightnessBackup;
+#if DEBUG
+  Serial.print(F("Restore brightness: "));Serial.println(_brightnessBackup);
+#endif
 }
 
 void fadeLedStrip() {
