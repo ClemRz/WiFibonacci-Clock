@@ -35,7 +35,7 @@ Plug the clock to the power source
 ### How to access the virtual UI
 
  1. With you smart-phone, tablet, computer, etc. connect to the wifi signal named `WiFibonacciClk`, password is `fibonacci`.
- 2. Open a browser and go to [http://192.168.4.1:81](http://192.168.4.1:81)
+ 2. Open a browser and go to [http://192.168.4.1](http://192.168.4.1)
  3. The setings page should load by itself
 
 ### How to use the physical UI

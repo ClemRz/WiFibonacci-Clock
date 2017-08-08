@@ -385,7 +385,7 @@
 				while (d.children.length > 0) container.appendChild(d.children[0]);
 			}
 
-			var _f, _w = new WebSocket('ws://192.168.4.1:81/', ['arduino']);
+			var _f, _w = new WebSocket('ws://' + location.hostname + ':81/', ['arduino']);
 
 			/*
 			* Handles messages comming from the websocket server

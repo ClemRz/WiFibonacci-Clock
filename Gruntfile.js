@@ -91,25 +91,15 @@ module.exports = function(grunt) {
                     dest: './generated/test/payload.html'
                 }]
             }
-        },
-        file_append: {
-            default: {
-                files: [{
-                    prepend: 'HTTP/1.1 200 OK\\r\\nServer: esp8266\\r\\nContent-Type: text/html\\r\\n\\r\\n',
-                    input: './generated/payload.html',
-                    output: './generated/payload.html'
-                }]
-            }
         }
     });
 
     grunt.loadNpmTasks('grunt-htmlcompressor');
     grunt.loadNpmTasks('grunt-text-replace');
-    grunt.loadNpmTasks('grunt-file-append');
     grunt.loadNpmTasks('grunt-regex-extract');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
 
-    grunt.registerTask('default', ['regex_extract', 'replace:before', 'htmlcompressor', 'uglify', 'copy', 'replace:after', 'file_append']);
+    grunt.registerTask('default', ['regex_extract', 'replace:before', 'htmlcompressor', 'uglify', 'copy', 'replace:after']);
 
 };
