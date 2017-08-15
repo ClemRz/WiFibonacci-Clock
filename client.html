@@ -77,7 +77,7 @@
 					<input type="radio" name="m" id="m3" onclick="zm(this)" value="3"><label for="m3">Random</label><br>
 					<input type="radio" name="m" id="m4" onclick="zm(this)" value="4"><label for="m4">Pulse</label><br>
 					<input type="radio" name="m" id="m5" onclick="zm(this)" value="5"><label for="m5">Constant Light</label><br>
-					Brightness: <input name="b" type="range" min="1" max="255" oninput="y(this,'b')"> <input type="number" name="c" min="1" max="255" oninput="y(this,'b')">
+					Brightness: <input name="b" type="range" min="1" max="255" onchange="y(this,'b')"> <input type="number" name="c" min="1" max="255" oninput="y(this,'b')">
 				</fieldset>
 				<fieldset>
 					<legend>Clock</legend>
@@ -91,17 +91,17 @@
 				</fieldset>
 				<fieldset>
 					<legend>Rainbow</legend>
-					Delay (ms): <input name="r" type="range" min="1" max="100" oninput="y(this,'r')"> <input type="number" name="s" min="1" max="100" oninput="y(this,'r')">
+					Delay (ms): <input name="r" type="range" min="1" max="100" onchange="y(this,'r')"> <input type="number" name="s" min="1" max="100" oninput="y(this,'r')">
 				</fieldset>
 				<fieldset>
 					<legend>Random</legend>
-					Delay (ms): <input name="j" type="range" min="1" max="9999" oninput="y(this,'j')"> <input type="number" name="k" min="1" max="9999" oninput="y(this,'j')"><br>
-					Ease (ms): <input name="g" type="range" min="1" max="100" oninput="y(this,'g')"> <input type="number" name="h" min="1" max="100" oninput="y(this,'g')">
+					Delay (ms): <input name="j" type="range" min="1" max="9999" onchange="y(this,'j')"> <input type="number" name="k" min="1" max="9999" oninput="y(this,'j')"><br>
+					Ease (ms): <input name="g" type="range" min="1" max="100" onchange="y(this,'g')"> <input type="number" name="h" min="1" max="100" oninput="y(this,'g')">
 				</fieldset>
 				<fieldset>
 					<legend>Pulse</legend>
 					Color: <input name="p" type="color" oninput="z(this,'p')"><br>
-					Delay (ms): <input name="d" type="range" min="1" max="100" oninput="y(this,'p')"> <input type="number" name="e" min="1" max="100" oninput="y(this,'p')">
+					Delay (ms): <input name="d" type="range" min="1" max="100" onchange="y(this,'p')"> <input type="number" name="e" min="1" max="100" oninput="y(this,'p')">
 				</fieldset>
 				<fieldset>
 					<legend>Constant light</legend>

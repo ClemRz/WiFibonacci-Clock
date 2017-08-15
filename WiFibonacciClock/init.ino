@@ -22,7 +22,7 @@
 void initSerial(void) {
   Serial.begin(9600);
   for(uint8_t t = 4; t > 0; t--) {
-    Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
+    Serial.printf("Boot wait [%d]...\n", t);
     Serial.flush();
     delay(1000);
   }
