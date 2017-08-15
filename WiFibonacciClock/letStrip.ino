@@ -84,7 +84,7 @@ void rainbowCycle(uint32_t delayMs) {
 }
 
 void rainbow(uint32_t delayMs) {
-  for(uint8_t i = 0; i < CLOCK_PIXELS; i++) setPixel(i, wheel((i + _j) & 255));
+  for(uint8_t i = 0; i < CLOCK_PIXELS; i++) setPixel(i, wheel(_j & 255));
   _ledStrip.show();
   _j = (_j + 1) % 256;
   timerMs(delayMs);
@@ -95,7 +95,7 @@ void randm(uint32_t delayMs, uint8_t easeMs) {
   unsigned long m = millis();
   if (_timer1 < m) {
     uint8_t pixel = random(0, CLOCK_PIXELS);
-    uint32_t color = random(0, 16777216); //2^(3*8)
+    uint32_t color = wheel(random(0, 255) & 255);
     _randomBrightness[pixel] = 255;
     _randomColor[pixel] = color;
     setPixel(pixel, color);
